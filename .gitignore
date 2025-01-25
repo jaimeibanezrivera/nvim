@@ -1,0 +1,9 @@
+*.swp
+*.swo
+*.swn
+*.undo
+*.backup
+*.session
+plugin/
+packer_compiled.lua
+
