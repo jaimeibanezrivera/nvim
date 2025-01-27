@@ -37,6 +37,8 @@ return {
       vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition, {})
       vim.keymap.set("n", "<leader>gr", vim.lsp.buf.references, {})
       vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, {})
+      vim.keymap.set("n", "<leader>rf", vim.lsp.buf.rename, { desc = "LSP Rename" })
+
     end,
   },
 }

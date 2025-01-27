@@ -11,8 +11,11 @@ return{
       end
 
       local builtin = require("telescope.builtin")
-      vim.keymap.set('n', '<leader>b', builtin.find_files, {})
-      vim.keymap.set('n', '<leader>fg', builtin.live_grep, {})
+      vim.keymap.set('n', '<leader>b', builtin.find_files, {})  -- Browse for file
+      vim.keymap.set('n', '<leader>bh', builtin.live_grep, {})  -- Browse Here
+      vim.keymap.set('n', '<leader>gc', builtin.git_commits, { desc = "View Git Commits" }) --Git commits
+      vim.keymap.set('n', '<leader>gch', builtin.git_bcommits, { desc = "View Git Buffer Commits" }) -- Git Commits Here
+      vim.keymap.set('n', '<leader>gs', builtin.git_status, { desc = "View Git Status" }) -- Git Status
     end
   },
   {

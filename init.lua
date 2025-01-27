@@ -50,6 +50,13 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-
-
 require("lazy").setup("plugins")
+
+-- Highligh yanked text
+vim.api.nvim_create_autocmd("TextYankPost", {
+  pattern = "*",
+  callback = function()
+    vim.highlight.on_yank { higroup = "IncSearch", timeout = 200 }
+  end,
+})
+
