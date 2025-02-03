@@ -25,7 +25,13 @@ return {
       [[                                                                       ]],
       [[                                                                       ]],
     }
-
+    -- Centering the header
+    dashboard.section.header.opts = {
+      position = "center",
+    }
+    -- Centering the MRU section
+    dashboard.section.mru.opts = { position = "center" }
+    
     alpha.setup(dashboard.opts)
   end,
 }
