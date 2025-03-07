@@ -16,6 +16,8 @@ return{
       vim.keymap.set('n', '<leader>gc', builtin.git_commits, { desc = "View Git Commits" }) --Git commits
       vim.keymap.set('n', '<leader>gh', builtin.git_bcommits, { desc = "View Git Buffer Commits" }) -- Git commits Here
       vim.keymap.set('n', '<leader>gs', builtin.git_status, { desc = "View Git Status" }) -- Git Status
+      vim.keymap.set('n', '<leader>be', require('telescope.builtin').diagnostics, { desc = "Browse Errors" }) -- Browse Errors
+
     end
   },
   {
