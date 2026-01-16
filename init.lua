@@ -6,6 +6,7 @@ vim.cmd("set number")
 vim.g.mapleader = " "
 vim.cmd("set clipboard+=unnamedplus")
 vim.cmd("set autoindent")
+vim.cmd("set cursorline")
 
 --mini terminal config
 vim.api.nvim_create_autocmd("TermOpen", {
