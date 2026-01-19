@@ -6,6 +6,7 @@ vim.cmd("set number")
 vim.g.mapleader = " "
 vim.cmd("set clipboard+=unnamedplus")
 vim.cmd("set autoindent")
+vim.cmd("set cursorline")
 
 --mini terminal config
 vim.api.nvim_create_autocmd("TermOpen", {
@@ -24,6 +25,22 @@ vim.keymap.set("n", "<leader>st", function()
 	vim.cmd("startinsert") -- Automatically enter terminal mode
 end)
 
+-- Define a global variable to track the current theme mode
+vim.g.current_theme_mode = "dark" -- Initialize to dark mode
+
+-- Function to toggle between dark and light Gruvbox Material
+local function toggle_background()
+    if vim.o.background == "dark" then
+        vim.o.background = "light"
+    else
+        vim.o.background = "dark"
+    end
+    -- Reapply your colorscheme so it updates immediately
+    vim.cmd.colorscheme("gruvbox-material") -- Apply the initial dark theme
+    print("Switched to gruvbox " .. vim.o.background .. " mode")
+end
+-- Map the toggle function to <leader>lm
+vim.keymap.set("n", "<leader>lm", toggle_background, { desc = "Toggle Light/Dark Mode" })
 -- Map <leader>q to exit terminal mode
 vim.keymap.set("t", "<C-c>", function()
 	if vim.bo.buftype == "terminal" then
