@@ -9,6 +9,7 @@
   "gruvbox-material": { "branch": "master", "commit": "e3681c761f7aef6d94577ab70175ff6678980ba7" },
   "lazy.nvim": { "branch": "main", "commit": "85c7ff3711b730b4030d03144f6db6375044ae82" },
   "lualine.nvim": { "branch": "master", "commit": "3946f0122255bc377d14a59b27b609fb3ab25768" },
+  "mason.nvim": { "branch": "main", "commit": "44d1e90e1f66e077268191e3ee9d2ac97cc18e65" },
   "neo-tree.nvim": { "branch": "v3.x", "commit": "8cdd6b1940f333c1dd085526a9c45b30fb2dbf50" },
   "no-neck-pain.nvim": { "branch": "main", "commit": "c3d96b648501554c9a87530b2ff86c721cddd5c1" },
   "none-ls.nvim": { "branch": "main", "commit": "550197530c12b4838d685cf4e0d5eb4cca8d52c7" },
