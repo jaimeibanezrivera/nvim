@@ -10,5 +10,8 @@ return {
                 changedelete = { text = '~' },
             },
         })
+        -- Keymap to toggle git blame
+        vim.keymap.set('n', '<leader>gb', '<cmd>Gitsigns toggle_current_line_blame<cr>',
+            { desc = 'Toggle git blame' })
     end
 }
