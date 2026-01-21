@@ -49,6 +49,11 @@ require("lazy").setup("plugins")
 -- KEYMAPS
 -- ============================================================================
 
+
+-- Navigation: Center screen after half-page movements
+vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half-page down and center" })
+vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half-page up and center" })
+
 -- Terminal: Open split terminal
 vim.keymap.set("n", "<leader>st", function()
 	vim.cmd.vnew()
