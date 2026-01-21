@@ -9,14 +9,28 @@ return{
         vim.notify("Telescope not found!", vim.log.levels.ERROR)
         return
       end
-
+      
+      -- Configure Telescope layout
+      telescope.setup({
+        defaults = {
+          layout_strategy = 'vertical',
+          layout_config = {
+            vertical = {
+              width = 0.9,
+              height = 0.9,
+              preview_height = 0.6,
+              preview_cutoff = 20,
+            },
+          },
+        },
+      })
+      
       local builtin = require("telescope.builtin")
       vim.keymap.set('n', '<leader>bf', builtin.find_files, {})  -- Browse for file
       vim.keymap.set('n', '<leader>bt', builtin.live_grep, {})  -- Browse for Text
-      vim.keymap.set('n', '<leader>be', require('telescope.builtin').diagnostics, { desc = "Browse Errors" }) -- Browse Errors
+      vim.keymap.set('n', '<leader>be', builtin.diagnostics, { desc = "Browse Errors" }) -- Browse Errors
       vim.keymap.set('n', '<leader>br', builtin.oldfiles, { desc = "Browse Recent files" }) -- Browse Recent
       vim.keymap.set('n', '<leader>bb', builtin.buffers, { desc = "Browse Buffers" }) -- Browse Buffers
-
     end
   },
   {
