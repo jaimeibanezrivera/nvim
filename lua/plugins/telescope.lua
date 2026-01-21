@@ -26,7 +26,18 @@ return{
       })
       
       local builtin = require("telescope.builtin")
+      
+      -- Function to find only hidden files
+      local function find_hidden_files()
+        builtin.find_files({
+          hidden = true,
+          file_ignore_patterns = { "^[^.]" }, -- Ignore files that don't start with a dot
+          prompt_title = "Find Hidden Files"
+        })
+      end
+      
       vim.keymap.set('n', '<leader>bf', builtin.find_files, {})  -- Browse for file
+      vim.keymap.set('n', '<leader>bh', find_hidden_files, { desc = "Browse Hidden files" })  -- Browse Hidden only
       vim.keymap.set('n', '<leader>bt', builtin.live_grep, {})  -- Browse for Text
       vim.keymap.set('n', '<leader>be', builtin.diagnostics, { desc = "Browse Errors" }) -- Browse Errors
       vim.keymap.set('n', '<leader>br', builtin.oldfiles, { desc = "Browse Recent files" }) -- Browse Recent
