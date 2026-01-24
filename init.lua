@@ -81,6 +81,11 @@ end, { desc = "Toggle Light/Dark Mode" })
 -- AUTOCOMMANDS
 -- ============================================================================
 
+-- Remove trailing whitespaces
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*",
+  command = "%s/\\s\\+$//e",
+})
 -- Terminal: Disable line numbers in terminal buffers
 vim.api.nvim_create_autocmd("TermOpen", {
 	group = vim.api.nvim_create_augroup("custom-term-open", { clear = true }),
