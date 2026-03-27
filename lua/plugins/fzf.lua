@@ -1,28 +1,37 @@
 return {
-  {
-    'junegunn/fzf',
-    build = ':call fzf#install()'
-  },
-  {
-    'junegunn/fzf.vim',
-    dependencies = { 'junegunn/fzf' },
-    config = function()
-      -- Make fzf window larger (similar to your 0.9 width/height)
-      vim.g.fzf_layout = { window = { width = 0.9, height = 0.9 } }
+  'ibhagwan/fzf-lua',
+  dependencies = { 'nvim-tree/nvim-web-devicons' },
+  config = function()
+    local fzf = require('fzf-lua')
 
-      -- Find hidden files only
-      vim.api.nvim_create_user_command('HiddenFiles', function()
-        vim.fn['fzf#run'](vim.fn['fzf#wrap']({
-          source = 'find . -type f -name ".*" 2>/dev/null',
-          options = '--prompt "Hidden Files> "'
-        }))
-      end, {})
+fzf.setup({
+  winopts = function()
+    local width = vim.o.columns
+    local height = vim.o.lines
 
-      vim.keymap.set('n', '<leader>bf', '<cmd>Files<cr>', {})
-      vim.keymap.set('n', '<leader>bh', '<cmd>HiddenFiles<cr>', { desc = "Browse Hidden files" })
-      vim.keymap.set('n', '<leader>bt', '<cmd>Rg<cr>', {})
-      vim.keymap.set('n', '<leader>br', '<cmd>History<cr>', { desc = "Browse Recent files" })
-      vim.keymap.set('n', '<leader>bb', '<cmd>Buffers<cr>', { desc = "Browse Buffers" })
+    if width >= 150 then
+      -- Horizontal (side by side preview)
+      return {
+        width  = 0.9,
+        height = 0.9,
+        preview = { layout = 'horizontal', ratio = 50 }
+      }
+    else
+      -- Vertical (preview on bottom)
+      return {
+        width  = 0.9,
+        height = 0.9,
+        preview = { layout = 'vertical', ratio = 50 }
+      }
     end
-  }
+  end,
+})
+
+    vim.keymap.set('n', '<leader>bf', fzf.files,                                                                        { desc = "Browse Files" })
+    vim.keymap.set('n', '<leader>bh', function() fzf.files({ fd_opts = '--hidden --no-ignore --exclude .git' }) end,    { desc = "Browse Hidden files" })
+    vim.keymap.set('n', '<leader>bt', fzf.live_grep,                                                                    { desc = "Browse Text (grep)" })
+    vim.keymap.set('n', '<leader>bw', fzf.grep_cword,                                                                   { desc = "Browse Word under cursor" })
+    vim.keymap.set('n', '<leader>br', fzf.oldfiles,                                                                     { desc = "Browse Recent files" })
+    vim.keymap.set('n', '<leader>bb', fzf.buffers,                                                                      { desc = "Browse Buffers" })
+  end
 }
