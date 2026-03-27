@@ -46,6 +46,27 @@ return {
         end,
       }
 
+    vim.lsp.config.lua_ls = {
+      cmd = { "lua-language-server" },
+      filetypes = { "lua" },
+      root_markers = { ".luarc.json", ".luarc.jsonc", ".git" },
+      capabilities = capabilities,
+      settings = {
+        Lua = {
+          runtime = { version = "LuaJIT" },  -- Neovim uses LuaJIT
+          workspace = {
+            checkThirdParty = false,
+            library = vim.api.nvim_get_runtime_file("", true),  -- expose nvim runtime
+          },
+          diagnostics = {
+            globals = { "vim" },  -- stop "undefined global vim" warnings
+          },
+          telemetry = { enable = false },
+        },
+      },
+    }
+vim.lsp.enable("lua_ls")
+
       -- Enable clangd LSP
       vim.lsp.enable('clangd')
     end,
