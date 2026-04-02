@@ -21,4 +21,16 @@ return {
       vim.cmd.colorscheme("gruvbox-material") -- Apply the initial dark theme
     end,
   },
+  {
+    "rebelot/kanagawa.nvim",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      require("kanagawa").setup({
+        compile = false,
+        transparent = false,
+        theme = "wave", -- "wave", "dragon", "lotus"
+      })
+    end,
+  },
 }

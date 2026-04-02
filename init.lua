@@ -103,4 +103,8 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 -- THEME
 -- ============================================================================
 vim.o.background = "dark"
-vim.cmd.colorscheme("gruvbox-material")
+local colorscheme_file = vim.fn.stdpath("config") .. "/.colorscheme"
+local f = io.open(colorscheme_file, "r")
+local saved = f and f:read("*l")
+if f then f:close() end
+vim.cmd.colorscheme(saved or "gruvbox-material")
