@@ -1,103 +1,74 @@
 return {
-	"neovim/nvim-lspconfig",
-	lazy = false,
-	config = function()
-		local capabilities = require("cmp_nvim_lsp").default_capabilities()
+	{
+		"neovim/nvim-lspconfig",
+		event = "BufReadPre",
+		dependencies = {
+			"hrsh7th/cmp-nvim-lsp",
+			"folke/trouble.nvim",
+			"nvim-tree/nvim-web-devicons",
+		},
+		config = function()
+			-- Get capabilities from cmp-nvim-lsp
+			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-		-- helper: common config table factory (you can extend per server)
-		local function make_config(extra)
-			extra = extra or {}
-			extra.capabilities = capabilities
-			return extra
-		end
-
-		-- Define server configs on vim.lsp.config (new 0.11+ API)
-		-- You can add server-specific settings inside the table below.
-		vim.lsp.config = vim.lsp.config or {} -- ensure table exists
-
-		vim.lsp.config["bashls"] = make_config({
-			filetypes = { "sh", "bash" },
-		})
-
-		vim.lsp.config["clangd"] = make_config({
-			-- add clangd-specific options here if needed
-		})
-
-		vim.lsp.config["pyright"] = make_config({
-			settings = { python = { analysis = { typeCheckingMode = "off" } } },
-		})
-
-		vim.lsp.config["lua_ls"] = make_config({
-			settings = {
-				Lua = {
-					diagnostics = { globals = { "vim" } },
-					workspace = { checkThirdParty = false },
+			-- Define clangd configuration using vim.lsp.config
+			vim.lsp.config.clangd = {
+                cmd = { "clangd", "--offset-encoding=utf-16" },
+				filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+				root_markers = {
+					".clangd",
+					".clang-tidy",
+					".clang-format",
+					"compile_commands.json",
+					"compile_flags.txt",
+					"configure.ac",
+					".git",
 				},
-			},
-		})
+				capabilities = capabilities,
+				init_options = {
+					fallbackFlags = {
+						"-std=c++17",
+						"-Wall",
+						"-Wextra",
+					},
+				},
+				on_attach = function(client, bufnr)
+					-- Optional: Configure buffer-specific keymaps
+					local opts = { noremap = true, silent = true, buffer = bufnr }
 
-		-- List of servers to enable
-		local servers = { "bashls", "clangd", "pyright", "lua_ls" }
-
-		-- Enable servers (starts them for matching buffers/filetypes)
-		-- This is the 0.11+ equivalent of the old `require("lspconfig").<server>.setup({...})`.
-		vim.lsp.enable(servers)
-
-		-- Compatibility fallback: if running older Neovim (<0.11) that doesn't have vim.lsp.config/enable,
-		-- try to call the old lspconfig setup to avoid breakage.
-		if not (vim.lsp and vim.lsp.config and vim.lsp.enable) then
-			local ok, lspconfig = pcall(require, "lspconfig")
-			if ok then
-				lspconfig.bashls.setup({ capabilities = capabilities })
-				lspconfig.clangd.setup({ capabilities = capabilities })
-				lspconfig.pyright.setup({ capabilities = capabilities })
-				lspconfig.lua_ls.setup({ capabilities = capabilities })
-			end
-		end
-
-		-- Keymaps for LSP (kept as you had them)
-		vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
-		vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition, {})
-		vim.keymap.set("n", "<leader>gr", vim.lsp.buf.references, {})
-		vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, {})
-		vim.keymap.set("n", "<leader>rf", vim.lsp.buf.rename, { desc = "LSP Rename" })
-
-		-- Diagnostic float preferences
-		local float_opts = {
-			focusable = true,
-			border = "rounded",
-			source = "always",
-			prefix = "●",
-		}
-
-		vim.keymap.set("n", "<leader>e", function()
-			vim.diagnostic.open_float(nil, float_opts)
-		end, { desc = "Show Diagnostic Float" })
-
-		vim.keymap.set("n", "<C-n>", function()
-			vim.diagnostic.goto_next()
-			vim.diagnostic.open_float(nil, float_opts)
-			vim.cmd("normal! zz")
-		end, { desc = "Go to Next Diagnostic with Float and Center" })
-
-		vim.keymap.set("n", "<C-p>", function()
-			vim.diagnostic.goto_prev()
-			vim.diagnostic.open_float(nil, float_opts)
-			vim.cmd("normal! zz")
-		end, { desc = "Go to Previous Diagnostic with Float and Center" })
-
-		-- (Optional) If you use mason-lspconfig and want to ensure that when mason installs servers
-		-- they are enabled automatically, you can register a simple handler:
-		local has_mason_lspconfig, mason_lspconfig = pcall(require, "mason-lspconfig")
-		if has_mason_lspconfig and mason_lspconfig.setup_handlers then
-			mason_lspconfig.setup_handlers({
-				-- default handler: enable the server if we already defined its config
-				function(server_name)
-					if vim.lsp.config[server_name] then
-						vim.lsp.enable(server_name)
-					end
+					vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+					vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+					vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
+					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+					vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+					vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
 				end,
-			})
-		end
-	end,
-}
+			}
+
+			vim.lsp.config.lua_ls = {
+				cmd = { "lua-language-server" },
+				filetypes = { "lua" },
+				root_markers = { ".luarc.json", ".luarc.jsonc", ".git" },
+				capabilities = capabilities,
+				settings = {
+					Lua = {
+						runtime = { version = "LuaJIT" }, -- Neovim uses LuaJIT
+						workspace = {
+							checkThirdParty = false,
+							library = vim.api.nvim_get_runtime_file("", true), -- expose nvim runtime
+						},
+						diagnostics = {
+							globals = { "vim" }, -- stop "undefined global vim" warnings
+						},
+						telemetry = { enable = false },
+					},
+				},
+			}
+			vim.lsp.enable("lua_ls")
+
+			-- Enable clangd LSP
+			vim.lsp.enable("clangd")
+		end,
+	},
+} -- ← Make sure this closing brace is present!
