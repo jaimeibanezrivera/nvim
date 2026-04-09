@@ -13,7 +13,7 @@ return {
 
 			-- Define clangd configuration using vim.lsp.config
 			vim.lsp.config.clangd = {
-                cmd = { "clangd", "--offset-encoding=utf-16" },
+				cmd = { "clangd", "--offset-encoding=utf-16" },
 				filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
 				root_markers = {
 					".clangd",
@@ -66,13 +66,20 @@ return {
 				},
 			}
 			vim.lsp.enable("lua_ls")
-
-			-- Diagnostic navigation (works for all LSPs)
-			vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
-			vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Prev diagnostic" })
-			vim.keymap.set("n", "ge", function() vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR }) end, { desc = "Next error" })
-			vim.keymap.set("n", "gE", function() vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR }) end, { desc = "Prev error" })
-
+			vim.lsp.config.basedpyright = {
+				cmd = { "basedpyright-langserver", "--stdio" },
+				filetypes = { "python" },
+				root_markers = { "pyproject.toml", "setup.py", ".git" },
+				capabilities = capabilities,
+				settings = {
+					basedpyright = {
+						analysis = {
+							typeCheckingMode = "basic",
+						},
+					},
+				},
+			}
+			vim.lsp.enable("basedpyright")
 			-- Enable clangd LSP
 			vim.lsp.enable("clangd")
 		end,
