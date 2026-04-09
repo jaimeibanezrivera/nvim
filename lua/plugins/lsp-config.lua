@@ -13,7 +13,7 @@ return {
 
 			-- Define clangd configuration using vim.lsp.config
 			vim.lsp.config.clangd = {
-                cmd = { "clangd", "--offset-encoding=utf-16" },
+				cmd = { "clangd", "--offset-encoding=utf-16" },
 				filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
 				root_markers = {
 					".clangd",
@@ -66,7 +66,20 @@ return {
 				},
 			}
 			vim.lsp.enable("lua_ls")
-
+			vim.lsp.config.basedpyright = {
+				cmd = { "basedpyright-langserver", "--stdio" },
+				filetypes = { "python" },
+				root_markers = { "pyproject.toml", "setup.py", ".git" },
+				capabilities = capabilities,
+				settings = {
+					basedpyright = {
+						analysis = {
+							typeCheckingMode = "basic",
+						},
+					},
+				},
+			}
+			vim.lsp.enable("basedpyright")
 			-- Enable clangd LSP
 			vim.lsp.enable("clangd")
 		end,
