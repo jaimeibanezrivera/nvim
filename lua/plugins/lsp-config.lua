@@ -84,4 +84,4 @@ return {
 			vim.lsp.enable("clangd")
 		end,
 	},
-} -- ← Make sure this closing brace is present!
+}

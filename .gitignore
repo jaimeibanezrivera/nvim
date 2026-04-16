@@ -4,6 +4,7 @@
 *.undo
 *.backup
 *.session
+*.colorscheme
 plugin/
 packer_compiled.lua
 

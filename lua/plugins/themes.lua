@@ -50,5 +50,20 @@ return {
         theme = "wave", -- "wave", "dragon", "lotus"
       })
     end,
+{ "EdenEast/nightfox.nvim" }, -- lazy
+  {
+    "NLKNguyen/papercolor-theme",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      vim.api.nvim_create_autocmd("ColorSchemePre", {
+        pattern = "PaperColor",
+        callback = function()
+          vim.o.background = "light"
+        end,
+      })
+    end,
   },
+  }
+
 }
