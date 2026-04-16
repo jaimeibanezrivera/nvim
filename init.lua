@@ -53,6 +53,11 @@ require("lazy").setup("plugins")
 -- Navigation: Center screen after half-page movements
 vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half-page down and center" })
 vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half-page up and center" })
+vim.keymap.set("n", "<C-o>", "<C-o>zz", { desc = "Jump back and center" })
+vim.keymap.set("n", "<C-i>", "<C-i>zz", { desc = "Jump forward and center" })
+
+-- Splits
+vim.keymap.set("n", "<leader>s", "<cmd>vsplit<CR>", { desc = "Vertical split" })
 
 -- Terminal: Open split terminal
 vim.keymap.set("n", "<leader>st", function()
