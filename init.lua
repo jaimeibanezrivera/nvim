@@ -1,4 +1,12 @@
 -- ============================================================================
+-- ENVIRONMENT
+-- ============================================================================
+-- Ensure Zscaler CA cert is trusted by Node.js (used by copilot.vim).
+if not vim.env.NODE_EXTRA_CA_CERTS then
+    vim.env.NODE_EXTRA_CA_CERTS = vim.fn.expand("~/.zscaler-ca.crt")
+end
+
+-- ============================================================================
 -- BASIC SETTINGS
 -- ============================================================================
 vim.g.mapleader = " " -- Set leader key first, before any mappings

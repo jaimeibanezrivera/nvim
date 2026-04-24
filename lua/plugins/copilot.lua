@@ -6,6 +6,9 @@ return {
             vim.g.copilot_no_tab_map = true
             vim.g.copilot_hide_during_completion = 0
 
+            -- Restrict Copilot context to the open buffer only (no workspace indexing).
+            vim.g.copilot_workspace_folders = {}
+
             vim.keymap.set("i", "<C-l>", 'copilot#Accept("")', {
                 expr = true,
                 replace_keycodes = false,
