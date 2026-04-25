@@ -27,10 +27,20 @@ return {
 			end,
 		})
 
-		vim.keymap.set("n", "<leader>bf", fzf.files, { desc = "Browse Files" })
-		vim.keymap.set("n", "<leader>bh", function()
-			fzf.files({ fd_opts = "--hidden --no-ignore --exclude .git" })
-		end, { desc = "Browse Hidden files" })
+		local show_hidden = false
+		local function browse_files()
+			fzf.files({
+				fd_opts = show_hidden and "--hidden --no-ignore --exclude .git" or nil,
+				actions = {
+					["ctrl-h"] = function()
+						show_hidden = not show_hidden
+						browse_files()
+					end,
+				},
+			})
+		end
+
+		vim.keymap.set("n", "<leader>bf", browse_files, { desc = "Browse Files (ctrl-h toggles hidden)" })
 		vim.keymap.set("n", "<leader>bt", fzf.live_grep, { desc = "Browse Text (grep)" })
 		vim.keymap.set("n", "<leader>bw", fzf.grep_cword, { desc = "Browse Word under cursor" })
 		vim.keymap.set("n", "<leader>br", fzf.oldfiles, { desc = "Browse Recent files" })
