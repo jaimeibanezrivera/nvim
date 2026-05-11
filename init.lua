@@ -83,6 +83,14 @@ vim.keymap.set("t", "<C-c>", function()
 	end
 end, { noremap = true, silent = true, desc = "Close terminal buffer" })
 
+-- Copy relative (or full) path of current file to clipboard
+vim.keymap.set("n", "<leader>cp", function()
+	local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":~:.")
+	if path == "" then path = vim.api.nvim_buf_get_name(0) end
+	vim.fn.setreg("+", path)
+	print("Copied: " .. path)
+end, { desc = "Copy relative path of current file" })
+
 -- Theme: Toggle between light and dark mode
 vim.keymap.set("n", "<leader>lm", function()
 	vim.o.background = vim.o.background == "dark" and "light" or "dark"
