@@ -65,6 +65,16 @@ return {
 			})
 		end,
 	},
+	{
+		"Shatur/neovim-ayu",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			require("ayu").setup({
+				mirage = false, -- set to true for mirage variant
+			})
+		end,
+	},
 	-- Using Lazy
 	{
 		"navarasu/onedark.nvim",
