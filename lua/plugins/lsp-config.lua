@@ -11,6 +11,17 @@ return {
 			-- Get capabilities from cmp-nvim-lsp
 			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
+			local function on_attach(client, bufnr)
+				local opts = { noremap = true, silent = true, buffer = bufnr }
+				vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+				vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+				vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+				vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
+				vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+				vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+				vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+			end
+
 			-- Define clangd configuration using vim.lsp.config
 			vim.lsp.config.clangd = {
 				cmd = { "clangd", "--offset-encoding=utf-16" },
@@ -32,18 +43,7 @@ return {
 						"-Wextra",
 					},
 				},
-				on_attach = function(client, bufnr)
-					-- Optional: Configure buffer-specific keymaps
-					local opts = { noremap = true, silent = true, buffer = bufnr }
-
-					vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-					vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
-					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-					vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
-					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-					vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-					vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-				end,
+				on_attach = on_attach,
 			}
 
 			vim.lsp.config.lua_ls = {
@@ -51,6 +51,7 @@ return {
 				filetypes = { "lua" },
 				root_markers = { ".luarc.json", ".luarc.jsonc", ".git" },
 				capabilities = capabilities,
+				on_attach = on_attach,
 				settings = {
 					Lua = {
 						runtime = { version = "LuaJIT" }, -- Neovim uses LuaJIT
@@ -71,6 +72,7 @@ return {
 				filetypes = { "python" },
 				root_markers = { "pyproject.toml", "setup.py", ".git" },
 				capabilities = capabilities,
+				on_attach = on_attach,
 				settings = {
 					basedpyright = {
 						analysis = {
@@ -85,6 +87,7 @@ return {
 				filetypes = { "rust" },
 				root_markers = { "Cargo.toml", "Cargo.lock", ".git" },
 				capabilities = capabilities,
+				on_attach = on_attach,
 				settings = {
 					["rust-analyzer"] = {
 						checkOnSave = true,
