@@ -21,24 +21,24 @@ vim.opt.clipboard:append("unnamedplus")
 -- ============================================================================
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
-	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
-	local out = vim.fn.system({
-		"git",
-		"clone",
-		"--filter=blob:none",
-		"--branch=stable",
-		lazyrepo,
-		lazypath,
-	})
-	if vim.v.shell_error ~= 0 then
-		vim.api.nvim_echo({
-			{ "Failed to clone lazy.nvim:\n", "ErrorMsg" },
-			{ out, "WarningMsg" },
-			{ "\nPress any key to exit..." },
-		}, true, {})
-		vim.fn.getchar()
-		os.exit(1)
-	end
+    local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+    local out = vim.fn.system({
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "--branch=stable",
+        lazyrepo,
+        lazypath,
+    })
+    if vim.v.shell_error ~= 0 then
+        vim.api.nvim_echo({
+            { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+            { out,                            "WarningMsg" },
+            { "\nPress any key to exit..." },
+        }, true, {})
+        vim.fn.getchar()
+        os.exit(1)
+    end
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -48,7 +48,6 @@ require("lazy").setup("plugins")
 -- KEYMAPS
 -- ============================================================================
 
-
 -- Navigation: Center screen after half-page movements
 vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half-page down and center" })
 vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half-page up and center" })
@@ -56,13 +55,23 @@ vim.keymap.set("n", "<C-o>", "<C-o>zz", { desc = "Jump back and center" })
 vim.keymap.set("n", "<C-i>", "<C-i>zz", { desc = "Jump forward and center" })
 
 -- Diagnostics: Navigate errors
-vim.keymap.set("n", "]e", function() vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR }) end, { desc = "Go to next error" })
-vim.keymap.set("n", "[e", function() vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR }) end, { desc = "Go to previous error" })
-vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end, { desc = "Go to next diagnostic" })
-vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, { desc = "Go to previous diagnostic" })
+vim.keymap.set("n", "]e", function()
+    vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR })
+end, { desc = "Go to next error" })
+vim.keymap.set("n", "[e", function()
+    vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR })
+end, { desc = "Go to previous error" })
+vim.keymap.set("n", "]d", function()
+    vim.diagnostic.jump({ count = 1 })
+end, { desc = "Go to next diagnostic" })
+vim.keymap.set("n", "[d", function()
+    vim.diagnostic.jump({ count = -1 })
+end, { desc = "Go to previous diagnostic" })
 vim.keymap.set("n", "<leader>e", function()
     local _, win = vim.diagnostic.open_float()
-    if win then vim.api.nvim_set_current_win(win) end
+    if win then
+        vim.api.nvim_set_current_win(win)
+    end
 end, { desc = "Focus diagnostic float" })
 
 -- Splits
@@ -70,25 +79,25 @@ vim.keymap.set("n", "<leader>s", "<cmd>vsplit<CR>", { desc = "Vertical split" })
 
 -- Terminal: Open split terminal
 vim.keymap.set("n", "<leader>st", function()
-	vim.cmd.vnew()
-	vim.cmd.term()
-	vim.cmd.wincmd("J")
-	vim.api.nvim_win_set_height(0, 11)
-	vim.cmd("startinsert")
+    vim.cmd.vnew()
+    vim.cmd.term()
+    vim.cmd.wincmd("J")
+    vim.api.nvim_win_set_height(0, 11)
+    vim.cmd("startinsert")
 end, { desc = "Open split terminal" })
 
 -- Terminal: Close terminal buffer
 vim.keymap.set("t", "<C-c>", function()
-	if vim.bo.buftype == "terminal" then
-		vim.cmd("q")
-	end
+    if vim.bo.buftype == "terminal" then
+        vim.cmd("q")
+    end
 end, { noremap = true, silent = true, desc = "Close terminal buffer" })
 
 -- Theme: Toggle between light and dark mode
 vim.keymap.set("n", "<leader>lm", function()
-	vim.o.background = vim.o.background == "dark" and "light" or "dark"
-	vim.cmd.colorscheme("gruvbox-material")
-	print("Switched to gruvbox " .. vim.o.background .. " mode")
+    vim.o.background = vim.o.background == "dark" and "light" or "dark"
+    vim.cmd.colorscheme("gruvbox-material")
+    print("Switched to gruvbox " .. vim.o.background .. " mode")
 end, { desc = "Toggle Light/Dark Mode" })
 
 -- ============================================================================
@@ -97,25 +106,25 @@ end, { desc = "Toggle Light/Dark Mode" })
 
 -- Remove trailing whitespaces
 vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = "*",
-  command = "%s/\\s\\+$//e",
+    pattern = "*",
+    command = "%s/\\s\\+$//e",
 })
 -- Terminal: Disable line numbers in terminal buffers
 vim.api.nvim_create_autocmd("TermOpen", {
-	group = vim.api.nvim_create_augroup("custom-term-open", { clear = true }),
-	callback = function()
-		vim.opt_local.number = false
-		vim.opt_local.relativenumber = false
-	end,
+    group = vim.api.nvim_create_augroup("custom-term-open", { clear = true }),
+    callback = function()
+        vim.opt_local.number = false
+        vim.opt_local.relativenumber = false
+    end,
 })
 
 -- Highlight yanked text briefly
 vim.api.nvim_create_autocmd("TextYankPost", {
-	group = vim.api.nvim_create_augroup("highlight-yank", { clear = true }),
-	pattern = "*",
-	callback = function()
-		vim.highlight.on_yank({ higroup = "IncSearch", timeout = 200 })
-	end,
+    group = vim.api.nvim_create_augroup("highlight-yank", { clear = true }),
+    pattern = "*",
+    callback = function()
+        vim.highlight.on_yank({ higroup = "IncSearch", timeout = 200 })
+    end,
 })
 
 -- ============================================================================
@@ -125,5 +134,7 @@ vim.o.background = "dark"
 local colorscheme_file = vim.fn.stdpath("config") .. "/.colorscheme"
 local f = io.open(colorscheme_file, "r")
 local saved = f and f:read("*l")
-if f then f:close() end
+if f then
+    f:close()
+end
 vim.cmd.colorscheme(saved or "gruvbox-material")
