@@ -55,6 +55,12 @@ vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half-page up and center" })
 vim.keymap.set("n", "<C-o>", "<C-o>zz", { desc = "Jump back and center" })
 vim.keymap.set("n", "<C-i>", "<C-i>zz", { desc = "Jump forward and center" })
 
+-- Diagnostics: Navigate errors
+vim.keymap.set("n", "]e", function() vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR }) end, { desc = "Go to next error" })
+vim.keymap.set("n", "[e", function() vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR }) end, { desc = "Go to previous error" })
+vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
+vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })
+
 -- Splits
 vim.keymap.set("n", "<leader>s", "<cmd>vsplit<CR>", { desc = "Vertical split" })
 
