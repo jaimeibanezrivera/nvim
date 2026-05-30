@@ -80,6 +80,19 @@ return {
 				},
 			}
 			vim.lsp.enable("basedpyright")
+			vim.lsp.config.rust_analyzer = {
+				cmd = { "rust-analyzer" },
+				filetypes = { "rust" },
+				root_markers = { "Cargo.toml", "Cargo.lock", ".git" },
+				capabilities = capabilities,
+				settings = {
+					["rust-analyzer"] = {
+						checkOnSave = true,
+						check = { command = "clippy" },
+					},
+				},
+			}
+			vim.lsp.enable("rust_analyzer")
 			-- Enable clangd LSP
 			vim.lsp.enable("clangd")
 		end,
