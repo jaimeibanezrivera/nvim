@@ -77,21 +77,43 @@ end, { desc = "Focus diagnostic float" })
 -- Splits
 vim.keymap.set("n", "<leader>s", "<cmd>vsplit<CR>", { desc = "Vertical split" })
 
--- Terminal: Open split terminal
-vim.keymap.set("n", "<leader>t", function()
+-- Terminal: Toggle split terminal (opens or closes+deletes the buffer)
+local term_buf = nil
+local term_win = nil
+
+vim.keymap.set("n", "<C-j>", function()
+    -- If window is open, close it and delete the buffer
+    if term_win and vim.api.nvim_win_is_valid(term_win) then
+        vim.api.nvim_win_close(term_win, true)
+        if term_buf and vim.api.nvim_buf_is_valid(term_buf) then
+            vim.api.nvim_buf_delete(term_buf, { force = true })
+        end
+        term_buf = nil
+        term_win = nil
+        return
+    end
+    -- Open a new terminal split
     vim.cmd.vnew()
     vim.cmd.term()
     vim.cmd.wincmd("J")
     vim.api.nvim_win_set_height(0, 11)
+    term_buf = vim.api.nvim_get_current_buf()
+    term_win = vim.api.nvim_get_current_win()
     vim.cmd("startinsert")
-end, { desc = "Open split terminal" })
+end, { desc = "Toggle split terminal" })
 
--- Terminal: Close terminal buffer
-vim.keymap.set("t", "<C-c>", function()
-    if vim.bo.buftype == "terminal" then
-        vim.cmd("q")
+local function close_terminal()
+    if term_win and vim.api.nvim_win_is_valid(term_win) then
+        vim.api.nvim_win_close(term_win, true)
     end
-end, { noremap = true, silent = true, desc = "Close terminal buffer" })
+    if term_buf and vim.api.nvim_buf_is_valid(term_buf) then
+        vim.api.nvim_buf_delete(term_buf, { force = true })
+    end
+    term_buf = nil
+    term_win = nil
+end
+
+vim.keymap.set("t", "<C-j>", close_terminal, { noremap = true, silent = true, desc = "Close terminal buffer" })
 
 -- Theme: Toggle between light and dark mode
 vim.keymap.set("n", "<leader>lm", function()
