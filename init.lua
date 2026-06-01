@@ -78,7 +78,7 @@ end, { desc = "Focus diagnostic float" })
 vim.keymap.set("n", "<leader>s", "<cmd>vsplit<CR>", { desc = "Vertical split" })
 
 -- Terminal: Open split terminal
-vim.keymap.set("n", "<leader>st", function()
+vim.keymap.set("n", "<leader>t", function()
     vim.cmd.vnew()
     vim.cmd.term()
     vim.cmd.wincmd("J")
