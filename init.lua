@@ -15,6 +15,17 @@ vim.opt.number = true
 vim.opt.cursorline = true
 
 -- System
+vim.g.clipboard = {
+	name = "OSC 52",
+	copy = {
+		["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+		["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+	},
+	paste = {
+		["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+		["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+	},
+}
 vim.opt.clipboard:append("unnamedplus")
 -- ============================================================================
 -- PLUGIN MANAGER (LAZY.NVIM)
@@ -148,6 +159,17 @@ vim.api.nvim_create_autocmd("TermOpen", {
     callback = function()
         vim.opt_local.number = false
         vim.opt_local.relativenumber = false
+    end,
+})
+
+-- Force solid background regardless of colorscheme or terminal transparency
+vim.api.nvim_create_autocmd("ColorScheme", {
+    pattern = "*",
+    callback = function()
+        local hl = vim.api.nvim_get_hl(0, { name = "Normal", link = false })
+        if not hl.bg then
+            vim.api.nvim_set_hl(0, "Normal", { bg = "#1d2021" })
+        end
     end,
 })
 
