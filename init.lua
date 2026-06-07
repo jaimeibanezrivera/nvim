@@ -77,6 +77,15 @@ end, { desc = "Focus diagnostic float" })
 -- Splits
 vim.keymap.set("n", "<leader>s", "<cmd>vsplit<CR>", { desc = "Vertical split" })
 
+-- Copy file path to clipboard (relative if possible, absolute otherwise)
+vim.keymap.set("n", "<leader>cp", function()
+    local abs = vim.fn.expand("%:p")
+    local rel = vim.fn.fnamemodify(abs, ":~:.")
+    local path = (rel ~= "" and rel ~= abs) and rel or abs
+    vim.fn.setreg("+", path)
+    print("Copied: " .. path)
+end, { desc = "Copy file path to clipboard" })
+
 -- Terminal: Toggle split terminal (opens or closes+deletes the buffer)
 local term_buf = nil
 local term_win = nil
