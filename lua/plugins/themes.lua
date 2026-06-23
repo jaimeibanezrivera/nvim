@@ -63,6 +63,32 @@ return {
 					vim.o.background = "light"
 				end,
 			})
+			vim.api.nvim_create_autocmd("ColorScheme", {
+				pattern = "PaperColor",
+				callback = function()
+					-- PaperColor has limited Treesitter/LSP semantic links for C/C++.
+					-- Link common function captures to the classic Function group.
+					vim.api.nvim_set_hl(0, "Function", { fg = "#1f6fbf", bold = true, ctermfg = 32, cterm = { bold = true } })
+
+					local groups = {
+						"@function",
+						"@function.call",
+						"@function.cpp",
+						"@function.call.cpp",
+						"@method",
+						"@method.call",
+						"@method.cpp",
+						"@method.call.cpp",
+						"@lsp.type.function",
+						"@lsp.type.method",
+						"@lsp.type.function.cpp",
+						"@lsp.type.method.cpp",
+					}
+					for _, group in ipairs(groups) do
+						vim.api.nvim_set_hl(0, group, { link = "Function" })
+					end
+				end,
+			})
 		end,
 	},
 	{
