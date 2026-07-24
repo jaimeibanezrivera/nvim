@@ -88,6 +88,12 @@ vim.keymap.set("n", "<leader>cp", function()
     print("Copied: " .. path)
 end, { desc = "Copy file path to clipboard" })
 
+-- Git: Open configured mergetool
+  vim.keymap.set("n", "<leader>gm", function()
+      vim.cmd("tabnew")
+      vim.cmd("terminal git mergetool")
+  end, { desc = "Git mergetool" })
+
 -- Terminal: Toggle split terminal (opens or closes+deletes the buffer)
 local term_buf = nil
 local term_win = nil
