@@ -8,7 +8,7 @@ return {
 			"nvim-tree/nvim-web-devicons",
 		},
 		config = function()
-			-- Get capabilities from cmp-nvim-lsp
+			local lspconfig = require("lspconfig")
 			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 			local function on_attach(client, bufnr)
@@ -22,20 +22,11 @@ return {
 				vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
 			end
 
-			-- Define clangd configuration using vim.lsp.config
-			vim.lsp.config.clangd = {
+			lspconfig.clangd.setup({
 				cmd = { "clangd", "--offset-encoding=utf-16" },
 				filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
-				root_markers = {
-					".clangd",
-					".clang-tidy",
-					".clang-format",
-					"compile_commands.json",
-					"compile_flags.txt",
-					"configure.ac",
-					".git",
-				},
 				capabilities = capabilities,
+				on_attach = on_attach,
 				init_options = {
 					fallbackFlags = {
 						"-std=c++17",
@@ -43,34 +34,31 @@ return {
 						"-Wextra",
 					},
 				},
-				on_attach = on_attach,
-			}
+			})
 
-			vim.lsp.config.lua_ls = {
+			lspconfig.lua_ls.setup({
 				cmd = { "lua-language-server" },
 				filetypes = { "lua" },
-				root_markers = { ".luarc.json", ".luarc.jsonc", ".git" },
 				capabilities = capabilities,
 				on_attach = on_attach,
 				settings = {
 					Lua = {
-						runtime = { version = "LuaJIT" }, -- Neovim uses LuaJIT
+						runtime = { version = "LuaJIT" },
 						workspace = {
 							checkThirdParty = false,
-							library = vim.api.nvim_get_runtime_file("", true), -- expose nvim runtime
+							library = vim.api.nvim_get_runtime_file("", true),
 						},
 						diagnostics = {
-							globals = { "vim" }, -- stop "undefined global vim" warnings
+							globals = { "vim" },
 						},
 						telemetry = { enable = false },
 					},
 				},
-			}
-			vim.lsp.enable("lua_ls")
-			vim.lsp.config.basedpyright = {
+			})
+
+			lspconfig.basedpyright.setup({
 				cmd = { "basedpyright-langserver", "--stdio" },
 				filetypes = { "python" },
-				root_markers = { "pyproject.toml", "setup.py", ".git" },
 				capabilities = capabilities,
 				on_attach = on_attach,
 				settings = {
@@ -80,12 +68,11 @@ return {
 						},
 					},
 				},
-			}
-			vim.lsp.enable("basedpyright")
-			vim.lsp.config.rust_analyzer = {
+			})
+
+			lspconfig.rust_analyzer.setup({
 				cmd = { "rust-analyzer" },
 				filetypes = { "rust" },
-				root_markers = { "Cargo.toml", "Cargo.lock", ".git" },
 				capabilities = capabilities,
 				on_attach = on_attach,
 				settings = {
@@ -94,10 +81,7 @@ return {
 						check = { command = "clippy" },
 					},
 				},
-			}
-			vim.lsp.enable("rust_analyzer")
-			-- Enable clangd LSP
-			vim.lsp.enable("clangd")
+			})
 		end,
 	},
 }
