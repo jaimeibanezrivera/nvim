@@ -8,7 +8,6 @@ return {
 			"nvim-tree/nvim-web-devicons",
 		},
 		config = function()
-			local lspconfig = require("lspconfig")
 			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 			local function on_attach(client, bufnr)
@@ -22,7 +21,7 @@ return {
 				vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
 			end
 
-			lspconfig.clangd.setup({
+			vim.lsp.config("clangd", {
 				cmd = { "clangd", "--offset-encoding=utf-16" },
 				filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
 				capabilities = capabilities,
@@ -36,7 +35,7 @@ return {
 				},
 			})
 
-			lspconfig.lua_ls.setup({
+			vim.lsp.config("lua_ls", {
 				cmd = { "lua-language-server" },
 				filetypes = { "lua" },
 				capabilities = capabilities,
@@ -56,7 +55,7 @@ return {
 				},
 			})
 
-			lspconfig.basedpyright.setup({
+			vim.lsp.config("basedpyright", {
 				cmd = { "basedpyright-langserver", "--stdio" },
 				filetypes = { "python" },
 				capabilities = capabilities,
@@ -70,7 +69,7 @@ return {
 				},
 			})
 
-			lspconfig.rust_analyzer.setup({
+			vim.lsp.config("rust_analyzer", {
 				cmd = { "rust-analyzer" },
 				filetypes = { "rust" },
 				capabilities = capabilities,
@@ -82,6 +81,8 @@ return {
 					},
 				},
 			})
+
+			vim.lsp.enable({ "clangd", "lua_ls", "basedpyright", "rust_analyzer" })
 		end,
 	},
 }
