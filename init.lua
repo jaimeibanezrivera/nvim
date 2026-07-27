@@ -44,6 +44,9 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup("plugins")
 
+-- Local modules (living in lua/ as if they were plugins).
+require("hg").setup()
+
 -- ============================================================================
 -- KEYMAPS
 -- ============================================================================
@@ -176,6 +179,7 @@ local saved = f and f:read("*l")
 if f then
     f:close()
 end
+
 vim.cmd.colorscheme(saved or "gruvbox-material")
 
 -- Keep Zellij theme in sync with Neovim light/dark mode.
