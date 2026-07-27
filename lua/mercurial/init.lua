@@ -3,6 +3,7 @@
 local M = {
   hgsigns = require("mercurial.hgsigns"),
   commit = require("mercurial.commit"),
+  log_graph = require("mercurial.log_graph"),
 }
 
 return M

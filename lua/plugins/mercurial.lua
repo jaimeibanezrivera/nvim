@@ -1,4 +1,5 @@
 local hg = require("mercurial")
+hg.log_graph.setup()
 
 return {
   {

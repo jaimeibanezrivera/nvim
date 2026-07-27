@@ -1,4 +1,4 @@
--- hg.log_graph: read-only commit graph viewer.
+-- mercurial.log_graph: read-only commit graph viewer.
 --
 -- Runs `hg log --graph` asynchronously and displays the output in a centered
 -- floating scratch buffer. Close with q or <Esc>. Nvim's native `/` search

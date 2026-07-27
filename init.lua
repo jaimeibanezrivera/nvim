@@ -44,9 +44,6 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup("plugins")
 
--- Local modules (living in lua/ as if they were plugins).
-require("hg").setup()
-
 -- ============================================================================
 -- KEYMAPS
 -- ============================================================================
