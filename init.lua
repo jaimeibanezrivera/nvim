@@ -132,13 +132,6 @@ end
 
 vim.keymap.set("t", "<C-j>", close_terminal, { noremap = true, silent = true, desc = "Close terminal buffer" })
 
--- Theme: Toggle between light and dark mode
-vim.keymap.set("n", "<leader>lm", function()
-    vim.o.background = vim.o.background == "dark" and "light" or "dark"
-    vim.cmd.colorscheme("gruvbox-material")
-    print("Switched to gruvbox " .. vim.o.background .. " mode")
-end, { desc = "Toggle Light/Dark Mode" })
-
 -- ============================================================================
 -- AUTOCOMMANDS
 -- ============================================================================
@@ -179,32 +172,83 @@ end
 
 vim.cmd.colorscheme(saved or "gruvbox-material")
 
--- Keep Zellij theme in sync with Neovim light/dark mode.
--- Light uses the local PaperColor-compatible theme; dark uses a built-in theme.
+-- Keep Zellij theme in sync with the Neovim colorscheme.
+-- Map Neovim colorscheme names to Zellij themes. Values may be either:
+--   * a string  -> used as-is
+--   * a table   -> { dark = "...", light = "..." }, resolved via vim.o.background
+-- Unknown schemes fall back to `zellij_fallback_theme` so we never leave Zellij
+-- pointing at a missing theme.
+local nvim_to_zellij_theme = {
+    -- User-installed Zellij themes (in ~/.config/zellij/themes/).
+    juliana = "juliana",
+    PaperColor = "pencil-light-visible-selection",
+
+    -- Zellij built-ins with exact name matches.
+    onedark = "onedark",
+    ["catppuccin-latte"] = "catppuccin-latte",
+    ["catppuccin-frappe"] = "catppuccin-frappe",
+    ["catppuccin-macchiato"] = "catppuccin-macchiato",
+    ["catppuccin-mocha"] = "catppuccin-mocha",
+    nightfox = "nightfox",
+    dayfox = "dayfox",
+    terafox = "terafox",
+
+    -- Kanagawa variants collapse onto the single Zellij `kanagawa` theme.
+    kanagawa = "kanagawa",
+    ["kanagawa-wave"] = "kanagawa",
+    ["kanagawa-dragon"] = "kanagawa",
+
+    -- Ayu variants (Neovim colorscheme names from `Shatur/neovim-ayu`).
+    ["ayu-dark"] = "ayu-dark",
+    ["ayu-mirage"] = "ayu-mirage",
+    ["ayu-light"] = "ayu-light",
+
+    -- Colorschemes whose light/dark flavor is driven by `vim.o.background`.
+    ["gruvbox-material"] = { dark = "gruvbox-dark", light = "gruvbox-light" },
+    everforest = { dark = "everforest-dark", light = "everforest-light" },
+}
+local zellij_fallback_theme = "onedark"
+
+local function resolve_zellij_theme(nvim_scheme, is_dark)
+    local mapping = nvim_to_zellij_theme[nvim_scheme]
+    if type(mapping) == "string" then
+        return mapping
+    elseif type(mapping) == "table" then
+        return is_dark and mapping.dark or mapping.light
+    end
+end
+
 local function sync_zellij_theme()
     local zellij_config = vim.fn.expand("~/.config/zellij/config.kdl")
     local is_dark = vim.o.background == "dark"
-    local target_theme = is_dark and "onedark" or "pencil-light-visible-selection"
     local mode_file = vim.fn.expand("~/.config/theme-mode")
 
     -- Make light/dark mode available to shell prompts.
     vim.fn.writefile({ is_dark and "dark" or "light" }, mode_file)
 
-    if vim.fn.filereadable(zellij_config) == 1 then
-        local lines = vim.fn.readfile(zellij_config)
-        local updated = false
+    local current = vim.g.colors_name or ""
+    local target_theme = resolve_zellij_theme(current, is_dark) or zellij_fallback_theme
 
-        for i, line in ipairs(lines) do
-            if line:match('^theme%s+".+"$') then
-                lines[i] = string.format('theme "%s"', target_theme)
+    if vim.fn.filereadable(zellij_config) ~= 1 then
+        return
+    end
+
+    local lines = vim.fn.readfile(zellij_config)
+    local desired_line = string.format('theme "%s"', target_theme)
+    local updated = false
+
+    for i, line in ipairs(lines) do
+        if line:match('^theme%s+".+"$') then
+            if line ~= desired_line then
+                lines[i] = desired_line
                 updated = true
-                break
             end
+            break
         end
+    end
 
-        if updated then
-            vim.fn.writefile(lines, zellij_config)
-        end
+    if updated then
+        vim.fn.writefile(lines, zellij_config)
     end
 end
 
