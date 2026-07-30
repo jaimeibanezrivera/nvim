@@ -112,4 +112,59 @@ return {
 			require("onedark").load()
 		end,
 	},
+	{
+		"ellisonleao/gruvbox.nvim",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			require("gruvbox").setup({})
+		end,
+	},
+	{
+		"folke/tokyonight.nvim",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			require("tokyonight").setup({})
+		end,
+	},
+	{
+		"gbprod/nord.nvim",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			require("nord").setup({})
+		end,
+	},
+	{
+		"Mofiqul/dracula.nvim",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			require("dracula").setup({})
+		end,
+	},
+	{
+		"maxmx03/solarized.nvim",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			require("solarized").setup({})
+		end,
+	},
+	{
+		"sonph/onehalf",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			-- The colorscheme files live under vim/colors/ in this repo, not
+			-- the repo root, so lazy.nvim never finds them without this.
+			vim.opt.rtp:append(vim.fn.stdpath("data") .. "/lazy/onehalf/vim")
+		end,
+	},
+	{
+		"lifepillar/vim-solarized8",
+		lazy = false,
+		priority = 1000,
+	},
 }
