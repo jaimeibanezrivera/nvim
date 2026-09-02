@@ -136,6 +136,30 @@ vim.keymap.set("t", "<C-j>", close_terminal, { noremap = true, silent = true, de
 -- AUTOCOMMANDS
 -- ============================================================================
 
+-- Recover stale swap files automatically, then remove them after a successful save.
+local swap_group = vim.api.nvim_create_augroup("auto-swap-recovery", { clear = true })
+
+vim.api.nvim_create_autocmd("SwapExists", {
+    group = swap_group,
+    callback = function()
+        local swap = vim.v.swapname
+        local info = vim.fn.swapinfo(swap)
+
+        -- Do not recover a swap belonging to another running Neovim process.
+        if not info.pid or info.pid <= 0 then
+            vim.v.swapchoice = "r"
+
+            vim.api.nvim_create_autocmd("BufWritePost", {
+                buffer = vim.api.nvim_get_current_buf(),
+                once = true,
+                callback = function()
+                    vim.fn.delete(swap)
+                end,
+            })
+        end
+    end,
+})
+
 -- Remove trailing whitespaces
 vim.api.nvim_create_autocmd("BufWritePre", {
     pattern = "*",
