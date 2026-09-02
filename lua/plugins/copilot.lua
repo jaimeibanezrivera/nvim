@@ -2,10 +2,14 @@ return {
     {
         "github/copilot.vim",
         lazy = false,
-        config = function()
+        init = function()
+            -- Use the language server bundled with copilot.vim. The default
+            -- npx launcher can fail when its transient npm cache is corrupted.
+            vim.g.copilot_npx_command = 0
             vim.g.copilot_no_tab_map = true
             vim.g.copilot_hide_during_completion = 0
-
+        end,
+        config = function()
             vim.keymap.set("i", "<C-l>", 'copilot#Accept("")', {
                 expr = true,
                 replace_keycodes = false,

@@ -15,7 +15,13 @@ vim.opt.number = true
 vim.opt.cursorline = true
 
 -- System
-vim.opt.clipboard:append("unnamedplus")
+local is_ssh = vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+if is_ssh then
+    -- Send clipboard writes through the SSH connection to the local terminal.
+    vim.g.clipboard = "osc52"
+else
+    vim.opt.clipboard:append("unnamedplus")
+end
 -- ============================================================================
 -- PLUGIN MANAGER (LAZY.NVIM)
 -- ============================================================================
@@ -180,6 +186,12 @@ vim.api.nvim_create_autocmd("TextYankPost", {
     pattern = "*",
     callback = function()
         vim.highlight.on_yank({ higroup = "IncSearch", timeout = 200 })
+
+        -- Zellij 0.44 can write, but not read, the local clipboard over OSC 52.
+        -- Keep normal paste using Neovim's register while copying yanks locally.
+        if is_ssh and vim.v.event.operator == "y" then
+            require("vim.ui.clipboard.osc52").copy("+")(vim.v.event.regcontents)
+        end
     end,
 })
 
