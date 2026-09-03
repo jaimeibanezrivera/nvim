@@ -25,24 +25,65 @@ return {
 					}
 				end
 			end,
+			files = {
+				-- Keep VCS metadata and language-server indexes out everywhere.
+				-- Project-specific build artifacts belong in a repo-local .ignore.
+				-- rg enumerates this repository roughly 10x faster than fd.
+				cmd = "rg --files --color=never "
+					.. "--glob '!.git/**' --glob '!.hg/**' --glob '!.cache/**'",
+				hidden = false,
+				no_ignore = false,
+			},
+			grep = {
+				rg_opts = "--column --line-number --no-heading --color=always --smart-case "
+					.. "--max-columns=4096 --glob '!.git/**' --glob '!.hg/**' --glob '!.cache/**' -e",
+			},
 		})
 
-		local show_hidden = false
-		local function browse_files()
-			fzf.files({
-				fd_opts = show_hidden and "--hidden --no-ignore --exclude .git" or nil,
+		local function scoped_picker_opts()
+			local repo = vim.fs.root(vim.fn.getcwd(), { ".hg", ".git" }) or vim.fn.getcwd()
+			local zacapa = repo .. "/vobs/dsl/sw/y/src/zacapa"
+
+			-- Only apply the Zacapa scope when this picker is opened in that repository.
+			if not (vim.uv or vim.loop).fs_stat(zacapa) then
+				return {}
+			end
+
+			local function toggle_scope(_, opts)
+				local current = vim.fs.normalize(opts.cwd or vim.fn.getcwd())
+				local next_cwd = current == vim.fs.normalize(zacapa) and repo or zacapa
+				local new_opts = vim.tbl_deep_extend("force", {}, opts.__call_opts or {}, {
+					cwd = next_cwd,
+					resume = true,
+				})
+
+				opts.__call_fn(new_opts)
+			end
+
+			return {
+				cwd = zacapa,
+				cwd_header = true,
 				actions = {
-					["ctrl-h"] = function()
-						show_hidden = not show_hidden
-						browse_files()
-					end,
+					["alt-a"] = {
+						fn = toggle_scope,
+						reuse = true,
+						header = false,
+					},
 				},
-			})
+			}
 		end
 
-		vim.keymap.set("n", "<leader>bf", browse_files, { desc = "Browse Files (ctrl-h toggles hidden)" })
-		vim.keymap.set("n", "<leader>bt", fzf.live_grep, { desc = "Browse Text (grep)" })
-		vim.keymap.set("n", "<leader>bw", fzf.grep_cword, { desc = "Browse Word under cursor" })
+		local function browse_files()
+			fzf.files(scoped_picker_opts())
+		end
+
+		vim.keymap.set("n", "<leader>bf", browse_files, { desc = "Browse Files (alt-a toggles repo scope)" })
+		vim.keymap.set("n", "<leader>bt", function()
+			fzf.live_grep(scoped_picker_opts())
+		end, { desc = "Browse Text (alt-a toggles repo scope)" })
+		vim.keymap.set("n", "<leader>bw", function()
+			fzf.grep_cword(scoped_picker_opts())
+		end, { desc = "Browse Word (alt-a toggles repo scope)" })
 		vim.keymap.set("n", "<leader>br", fzf.oldfiles, { desc = "Browse Recent files" })
 		vim.keymap.set("n", "<leader>bb", fzf.buffers, { desc = "Browse Buffers" })
 		vim.keymap.set("n", "<leader>bc", function()

@@ -16,6 +16,15 @@ return {
       },
       filesystem = {
         group_empty_dirs = true,
+        filtered_items = {
+          never_show = { ".git", ".hg", ".cache" },
+          hide_by_name = {
+            "fenrir_cache",
+            "ivypool",
+            "compile_commands.json",
+            "buildroot-symlinks",
+          },
+        },
         follow_current_file = {
           enabled = true,
           leave_dirs_open = true,

@@ -10,25 +10,33 @@ return {
 		config = function()
 			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-			local function on_attach(client, bufnr)
-				local opts = { noremap = true, silent = true, buffer = bufnr }
-				vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-				vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
-				vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-				vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
-				vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-				vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-				vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-			end
+			vim.api.nvim_create_autocmd("LspAttach", {
+				group = vim.api.nvim_create_augroup("user-lsp-keymaps", { clear = true }),
+				callback = function(args)
+					local bufnr = args.buf
+					local opts = { noremap = true, silent = true, buffer = bufnr }
+					vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+					vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+					vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
+					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+					vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+					vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+				end,
+			})
 
 			vim.lsp.config("clangd", {
-				cmd = { "clangd", "--offset-encoding=utf-16" },
+				cmd = {
+					"clangd",
+					"--background-index",
+					"--clang-tidy",
+					"--offset-encoding=utf-16",
+				},
 				filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+				root_markers = { "compile_commands.json", ".clangd", ".hg", ".git" },
 				capabilities = capabilities,
-				on_attach = on_attach,
 				init_options = {
 					fallbackFlags = {
-						"-std=c++17",
 						"-Wall",
 						"-Wextra",
 					},
@@ -39,7 +47,6 @@ return {
 				cmd = { "lua-language-server" },
 				filetypes = { "lua" },
 				capabilities = capabilities,
-				on_attach = on_attach,
 				settings = {
 					Lua = {
 						runtime = { version = "LuaJIT" },
@@ -59,10 +66,11 @@ return {
 				cmd = { "basedpyright-langserver", "--stdio" },
 				filetypes = { "python" },
 				capabilities = capabilities,
-				on_attach = on_attach,
 				settings = {
 					basedpyright = {
 						analysis = {
+							diagnosticMode = "openFilesOnly",
+							autoSearchPaths = false,
 							typeCheckingMode = "basic",
 						},
 					},
@@ -73,7 +81,6 @@ return {
 				cmd = { "rust-analyzer" },
 				filetypes = { "rust" },
 				capabilities = capabilities,
-				on_attach = on_attach,
 				settings = {
 					["rust-analyzer"] = {
 						checkOnSave = true,
