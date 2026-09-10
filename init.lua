@@ -142,26 +142,43 @@ vim.keymap.set("t", "<C-j>", close_terminal, { noremap = true, silent = true, de
 -- AUTOCOMMANDS
 -- ============================================================================
 
--- Recover stale swap files automatically, then remove them after a successful save.
+-- Delete leftover swap files and keep editing in this Neovim instance.
+-- Still warn if another process on this host appears to own the swap.
 local swap_group = vim.api.nvim_create_augroup("auto-swap-recovery", { clear = true })
+
+local function swap_owner_running(info)
+    local pid = info.pid
+    if type(pid) ~= "number" or pid <= 0 then
+        return false
+    end
+
+    local hostname = info.hostname or ""
+    if hostname ~= "" then
+        local this_host = vim.uv.os_gethostname()
+        if hostname ~= this_host and hostname ~= vim.fn.hostname() then
+            return false
+        end
+    end
+
+    return vim.uv.kill(pid, 0) == 0
+end
 
 vim.api.nvim_create_autocmd("SwapExists", {
     group = swap_group,
     callback = function()
         local swap = vim.v.swapname
         local info = vim.fn.swapinfo(swap)
+        vim.v.swapchoice = "d"
 
-        -- Do not recover a swap belonging to another running Neovim process.
-        if not info.pid or info.pid <= 0 then
-            vim.v.swapchoice = "r"
-
-            vim.api.nvim_create_autocmd("BufWritePost", {
-                buffer = vim.api.nvim_get_current_buf(),
-                once = true,
-                callback = function()
-                    vim.fn.delete(swap)
-                end,
-            })
+        if swap_owner_running(info) then
+            vim.notify(
+                string.format(
+                    "Deleted swap for %s; pid %d may still have it open",
+                    vim.fn.fnamemodify(vim.v.swapname, ":t"),
+                    info.pid
+                ),
+                vim.log.levels.WARN
+            )
         end
     end,
 })
@@ -204,6 +221,18 @@ local f = io.open(colorscheme_file, "r")
 local saved = f and f:read("*l")
 if f then
     f:close()
+end
+
+local cwd = vim.fn.getcwd()
+local dawnfox_projects = {
+    "/repo/asic_fpga/work/jaimrive/zacapa_rtl",
+    "/PClocal/repo/asic_fpga/work/jaimrive/zacapa_rtl",
+}
+for _, project in ipairs(dawnfox_projects) do
+    if cwd == project or vim.startswith(cwd, project .. "/") then
+        saved = "dawnfox"
+        break
+    end
 end
 
 vim.cmd.colorscheme(saved or "gruvbox-material")

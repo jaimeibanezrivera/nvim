@@ -1,0 +1,3 @@
+# Mercurial style for the Neovim graph view.
+# Current changeset is highlighted and marked with <==
+changeset = '{label("log.branch", branch)}{ifeq(topic, "", "", label("log.tag", " {topic}"))} {label("changeset.{phase}", rev)}:{label("changeset.{phase}", node|short)} {label("grep.user", author|user)}{label("log.tag", if(tags, " {tags}"))}{bookmarks % " {ifeq(bookmark, currentbookmark, label(\'log.activebookmark\', bookmark), label(\'log.bookmark\', bookmark))} "}\n{label(ifcontains(rev, revset("."), "desc.here"), desc|firstline)}{ifcontains(rev, revset("."), "  <==")}\n'
