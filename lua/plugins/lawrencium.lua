@@ -360,7 +360,9 @@ local hg_interactive_state = {
     suppress_exit = false,
 }
 
-local function open_crecord_file(root)
+local open_hg_interactive
+
+local function crecord_scan_rows(root, each)
     local buf = vim.api.nvim_get_current_buf()
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     local row = vim.api.nvim_win_get_cursor(0)[1]
@@ -384,35 +386,346 @@ local function open_crecord_file(root)
         for r = start, 1, -1 do
             if not seen[r] then
                 seen[r] = true
-                local relative = crecord_file_from_line(lines[r], root)
-                if relative then
-                    local path = vim.fs.joinpath(root, relative)
-                    local prev = hg_interactive_state.prev_win
-                    local float = hg_interactive_state.win
-                    local term_buf = buf
-
-                    hg_interactive_state.suppress_exit = true
-                    if float and vim.api.nvim_win_is_valid(float) then
-                        vim.api.nvim_win_close(float, true)
-                    end
-                    if vim.api.nvim_buf_is_valid(term_buf) then
-                        pcall(vim.api.nvim_buf_delete, term_buf, { force = true })
-                    end
-
-                    if prev and vim.api.nvim_win_is_valid(prev) then
-                        vim.api.nvim_set_current_win(prev)
-                    end
-                    vim.cmd.edit(vim.fn.fnameescape(path))
-                    return
+                local result = each(lines[r], r, start)
+                if result then
+                    return result
                 end
             end
         end
     end
-
-    vim.notify("No Mercurial file found on this line", vim.log.levels.WARN)
 end
 
-local function open_hg_interactive(opts)
+local function crecord_relative_under_cursor(root)
+    return crecord_scan_rows(root, function(line)
+        return crecord_file_from_line(line, root)
+    end)
+end
+
+local function crecord_visible_text(line)
+    local plain = vim.trim(strip_ansi(line or ""))
+    plain = plain:gsub("^%[.%]%s*", "")
+    plain = plain:gsub("^%*%*%s*", "")
+    return vim.trim(plain)
+end
+
+local function crecord_hunk_header(line)
+    return crecord_visible_text(line):match("^(@@ %-%d+[,%d]* %+%d+[,%d]* @@)")
+end
+
+local function hunk_key(header)
+    return header and header:match("@@ (%-%d+[,%d]* %+%d+[,%d]*) @@")
+end
+
+local function parse_hunk_header(header)
+    local old_s, old_c, new_s, new_c = header:match("@@ %-(%d+),(%d+) %+(%d+),(%d+) @@")
+    if old_s then
+        return tonumber(old_s), tonumber(old_c), tonumber(new_s), tonumber(new_c)
+    end
+
+    old_s, old_c, new_s = header:match("@@ %-(%d+),(%d+) %+(%d+) @@")
+    if old_s then
+        return tonumber(old_s), tonumber(old_c), tonumber(new_s), 1
+    end
+
+    old_s, new_s, new_c = header:match("@@ %-(%d+) %+(%d+),(%d+) @@")
+    if old_s then
+        return tonumber(old_s), 1, tonumber(new_s), tonumber(new_c)
+    end
+
+    old_s, new_s = header:match("@@ %-(%d+) %+(%d+) @@")
+    if old_s then
+        return tonumber(old_s), 1, tonumber(new_s), 1
+    end
+end
+
+local function crecord_drop_target(root)
+    local file
+    local file_row
+    local hunk
+    local origin
+    local found = crecord_scan_rows(root, function(line, row, start)
+        origin = start
+        if not hunk then
+            hunk = crecord_hunk_header(line)
+        end
+        if not file then
+            file = crecord_file_from_line(line, root)
+            if file then
+                file_row = row
+            end
+        end
+        if file and (hunk or file_row == start) then
+            return true
+        end
+    end)
+
+    if not found or not file then
+        return nil
+    end
+
+    if file_row == origin or not hunk then
+        return { relative = file, kind = "file" }
+    end
+
+    return { relative = file, kind = "hunk", hunk = hunk }
+end
+
+local function close_hg_interactive()
+    local buf = vim.api.nvim_get_current_buf()
+    local prev = hg_interactive_state.prev_win
+    local float = hg_interactive_state.win
+
+    hg_interactive_state.suppress_exit = true
+    if float and vim.api.nvim_win_is_valid(float) then
+        vim.api.nvim_win_close(float, true)
+    end
+    if vim.api.nvim_buf_is_valid(buf) then
+        pcall(vim.api.nvim_buf_delete, buf, { force = true })
+    end
+
+    if prev and vim.api.nvim_win_is_valid(prev) then
+        vim.api.nvim_set_current_win(prev)
+    end
+
+    return prev
+end
+
+local function open_crecord_file(root)
+    local relative = crecord_relative_under_cursor(root)
+    if not relative then
+        vim.notify("No Mercurial file found on this line", vim.log.levels.WARN)
+        return
+    end
+
+    close_hg_interactive()
+    vim.cmd.edit(vim.fn.fnameescape(vim.fs.joinpath(root, relative)))
+end
+
+local function path_is_modified_in_nvim(path)
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(buf)
+            and vim.api.nvim_buf_get_name(buf) == path
+            and vim.bo[buf].modified
+        then
+            return true
+        end
+    end
+    return false
+end
+
+local function reload_path(path)
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(buf) and vim.api.nvim_buf_get_name(buf) == path then
+            vim.api.nvim_buf_call(buf, function()
+                vim.cmd("silent! edit!")
+            end)
+        end
+    end
+end
+
+local function extract_hunk_lines(diff, header)
+    local want = hunk_key(header)
+    if not want then
+        return nil
+    end
+
+    local hunk_lines = {}
+    local capturing = false
+    for line in vim.gsplit(diff, "\n", { plain = true }) do
+        if line:find("^@@", 1) then
+            if capturing then
+                break
+            end
+            if hunk_key(line) == want then
+                capturing = true
+                hunk_lines[#hunk_lines + 1] = line
+            end
+        elseif capturing then
+            if line:find("^diff ", 1) or line:find("^index ", 1) then
+                break
+            end
+            hunk_lines[#hunk_lines + 1] = line
+        end
+    end
+
+    if capturing and #hunk_lines > 0 then
+        return hunk_lines
+    end
+end
+
+local function reverse_apply_hunk(path, hunk_lines)
+    local old_s, old_c, new_s, new_c = parse_hunk_header(hunk_lines[1] or "")
+    if not old_s then
+        return false, "Could not parse hunk header"
+    end
+
+    local old_body = {}
+    local new_body = {}
+    for i = 2, #hunk_lines do
+        local line = hunk_lines[i]
+        local sigil = line:sub(1, 1)
+        local text = line:sub(2)
+        if sigil == "\\" then
+            -- "\\ No newline at end of file"
+        elseif sigil == "+" then
+            new_body[#new_body + 1] = text
+        elseif sigil == "-" then
+            old_body[#old_body + 1] = text
+        else
+            if sigil == " " then
+                text = line:sub(2)
+            else
+                text = line
+            end
+            old_body[#old_body + 1] = text
+            new_body[#new_body + 1] = text
+        end
+    end
+
+    local lines = vim.fn.readfile(path)
+    local start_idx = new_c == 0 and (new_s + 1) or new_s
+    if start_idx < 1 then
+        start_idx = 1
+    end
+
+    for i, expected in ipairs(new_body) do
+        if lines[start_idx + i - 1] ~= expected then
+            return false, "Working copy no longer matches this hunk"
+        end
+    end
+
+    local result = {}
+    for i = 1, start_idx - 1 do
+        result[#result + 1] = lines[i]
+    end
+    vim.list_extend(result, old_body)
+    for i = start_idx + #new_body, #lines do
+        result[#result + 1] = lines[i]
+    end
+
+    if vim.fn.writefile(result, path) ~= 0 then
+        return false, "Failed to write " .. path
+    end
+
+    return true
+end
+
+local function hg_file_status(root, relative)
+    local status_result = vim.system({
+        "hg",
+        "--cwd",
+        root,
+        "status",
+        "--",
+        relative,
+    }, { text = true }):wait()
+    return vim.trim(status_result.stdout or ""):sub(1, 1)
+end
+
+local function hg_has_uncommitted(root)
+    local listed = vim.system({
+        "hg",
+        "--cwd",
+        root,
+        "status",
+        "-mardu",
+    }, { text = true }):wait()
+    return vim.trim(listed.stdout or "") ~= ""
+end
+
+local function reopen_hg_commit(root)
+    if not hg_has_uncommitted(root) then
+        vim.notify("No uncommitted files")
+        return
+    end
+
+    open_hg_interactive({
+        root = root,
+        title = "hg commit -i",
+        args = { "commit", "--interactive" },
+        footer = " C-o open file  C-x drop ",
+        allow_drop = true,
+        done_message = "Mercurial commit finished",
+        abort_message = "Mercurial commit aborted",
+    })
+end
+
+local function drop_file_changes(root, relative, status)
+    local path = vim.fs.joinpath(root, relative)
+    if status == "?" then
+        if vim.fn.delete(path) ~= 0 then
+            return false, "Failed to delete " .. relative
+        end
+        return true
+    end
+
+    local revert = vim.system({
+        "hg",
+        "--cwd",
+        root,
+        "revert",
+        "--",
+        relative,
+    }, { text = true }):wait()
+    if revert.code ~= 0 then
+        return false, vim.trim(revert.stderr or "Mercurial revert failed")
+    end
+    return true
+end
+
+local function drop_crecord_changes(root)
+    local target = crecord_drop_target(root)
+    if not target then
+        vim.notify("No Mercurial file found on this line", vim.log.levels.WARN)
+        return
+    end
+
+    local path = vim.fs.joinpath(root, target.relative)
+    if path_is_modified_in_nvim(path) then
+        vim.notify("Save " .. target.relative .. " before dropping changes", vim.log.levels.WARN)
+        return
+    end
+
+    local status = hg_file_status(root, target.relative)
+    local ok, err
+
+    if target.kind == "hunk" and status ~= "?" then
+        local diff = vim.system({
+            "hg",
+            "--cwd",
+            root,
+            "diff",
+            "--git",
+            "--",
+            target.relative,
+        }, { text = true }):wait()
+        if diff.code ~= 0 then
+            vim.notify(vim.trim(diff.stderr or "hg diff failed"), vim.log.levels.ERROR)
+            return
+        end
+
+        local hunk_lines = extract_hunk_lines(diff.stdout or "", target.hunk)
+        if not hunk_lines then
+            vim.notify("Could not match the selected hunk in hg diff", vim.log.levels.WARN)
+            return
+        end
+
+        ok, err = reverse_apply_hunk(path, hunk_lines)
+    else
+        ok, err = drop_file_changes(root, target.relative, status)
+    end
+
+    if not ok then
+        vim.notify(err or "Failed to drop changes", vim.log.levels.ERROR)
+        return
+    end
+
+    close_hg_interactive()
+    reload_path(path)
+    reopen_hg_commit(root)
+end
+
+open_hg_interactive = function(opts)
     local win = hg_interactive_state.win
     if win and vim.api.nvim_win_is_valid(win) then
         vim.api.nvim_win_close(win, true)
@@ -442,7 +755,7 @@ local function open_hg_interactive(opts)
         border = "rounded",
         title = " " .. opts.title .. " ",
         title_pos = "center",
-        footer = " C-o open file ",
+        footer = opts.footer or " C-o open file ",
         footer_pos = "center",
     })
 
@@ -483,6 +796,12 @@ local function open_hg_interactive(opts)
         open_crecord_file(root)
     end, { buffer = buf, desc = "Open file under Mercurial cursor" })
 
+    if opts.allow_drop then
+        vim.keymap.set({ "t", "n" }, "<C-x>", function()
+            drop_crecord_changes(root)
+        end, { buffer = buf, desc = "Drop changes in file under Mercurial cursor" })
+    end
+
     vim.api.nvim_create_autocmd("WinClosed", {
         once = true,
         callback = function(event)
@@ -499,6 +818,8 @@ local function open_hg_commit_interactive()
     open_hg_interactive({
         title = "hg commit -i",
         args = { "commit", "--interactive" },
+        footer = " C-o open file  C-x drop ",
+        allow_drop = true,
         done_message = "Mercurial commit finished",
         abort_message = "Mercurial commit aborted",
     })
