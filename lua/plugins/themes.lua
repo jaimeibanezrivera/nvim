@@ -44,7 +44,18 @@ return {
         lazy = false,
         priority = 1000,
         config = function()
-            require("kanagawa").setup({
+            local kanagawa = require("kanagawa")
+            local load = kanagawa.load
+            -- All three flavors otherwise leave colors_name as "kanagawa",
+            -- so zj-theme can only send one Alacritty theme.
+            function kanagawa.load(theme)
+                load(theme)
+                local name = kanagawa._CURRENT_THEME or theme or "wave"
+                vim.g.colors_name = "kanagawa-" .. name
+                vim.o.background = name == "lotus" and "light" or "dark"
+            end
+
+            kanagawa.setup({
                 compile = false,
                 transparent = false,
                 theme = "wave", -- "wave", "dragon", "lotus"

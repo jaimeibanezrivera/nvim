@@ -224,15 +224,5 @@ if f then
 end
 
 local cwd = vim.fn.getcwd()
-local dawnfox_projects = {
-    "/repo/asic_fpga/work/jaimrive/zacapa_rtl",
-    "/PClocal/repo/asic_fpga/work/jaimrive/zacapa_rtl",
-}
-for _, project in ipairs(dawnfox_projects) do
-    if cwd == project or vim.startswith(cwd, project .. "/") then
-        saved = "dawnfox"
-        break
-    end
-end
 
 vim.cmd.colorscheme(saved or "gruvbox-material")

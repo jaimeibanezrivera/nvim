@@ -1154,6 +1154,85 @@ local topic_namespace = vim.api.nvim_create_namespace("lawrencium_topics")
 local blame_namespace = vim.api.nvim_create_namespace("lawrencium_blame")
 local blame_states = {}
 
+-- Reserved: uncommitted/secret, local drafts, public default.
+-- Topics (and other named branches) get unique rainbow colors after that.
+local hg_log_topic_palette = {
+    { name = "HgLogTopicPurple", fg = "#af5fd7", ctermfg = 141 },
+    { name = "HgLogTopicLightBlue", fg = "#87d7ff", ctermfg = 117 },
+    { name = "HgLogTopicDarkBlue", fg = "#3a6ea5", ctermfg = 25 },
+    { name = "HgLogTopicOrange", fg = "#ff9f1c", ctermfg = 214 },
+    { name = "HgLogTopicMagenta", fg = "#d65d9a", ctermfg = 169 },
+    { name = "HgLogTopicTeal", fg = "#2ec4b6", ctermfg = 43 },
+    { name = "HgLogTopicGold", fg = "#e9c46a", ctermfg = 221 },
+    { name = "HgLogTopicBrown", fg = "#bc6c25", ctermfg = 166 },
+    { name = "HgLogTopicCyan", fg = "#4cc9f0", ctermfg = 81 },
+    { name = "HgLogTopicViolet", fg = "#7b2cbf", ctermfg = 98 },
+    { name = "HgLogTopicPink", fg = "#f72585", ctermfg = 205 },
+    { name = "HgLogTopicIndigo", fg = "#4361ee", ctermfg = 63 },
+    { name = "HgLogTopicLavender", fg = "#c77dff", ctermfg = 177 },
+    { name = "HgLogTopicSky", fg = "#00b4d8", ctermfg = 38 },
+    { name = "HgLogTopicCoral", fg = "#ee6c4d", ctermfg = 209 },
+}
+
+local function hsl_to_hex(h, s, l)
+    h = h % 360
+    local function channel(n)
+        local k = (n + h / 30) % 12
+        local a = s * math.min(l, 1 - l)
+        local c = l - a * math.max(-1, math.min(k - 3, 9 - k, 1))
+        return math.floor(c * 255 + 0.5)
+    end
+    return string.format("#%02x%02x%02x", channel(0), channel(8), channel(4))
+end
+
+local function define_hg_log_highlights()
+    local dark = vim.o.background ~= "light"
+    vim.api.nvim_set_hl(0, "HgLogUncommitted", {
+        fg = dark and "#7c6f64" or "#000000",
+        ctermfg = dark and 8 or 0,
+    })
+    vim.api.nvim_set_hl(0, "HgLogLocal", { fg = "#e03131", ctermfg = 1 })
+    vim.api.nvim_set_hl(0, "HgLogDefault", { fg = "#2f9e44", ctermfg = 2 })
+
+    for _, color in ipairs(hg_log_topic_palette) do
+        vim.api.nvim_set_hl(0, color.name, { fg = color.fg, ctermfg = color.ctermfg })
+    end
+end
+
+local function hg_log_topic_highlight(index)
+    local color = hg_log_topic_palette[index]
+    if color then
+        return color.name
+    end
+
+    local name = "HgLogTopicGen" .. index
+    local hue = (270 + (index - 1) * 47) % 360
+    if hue < 20 or hue > 345 then
+        hue = (hue + 40) % 360
+    end
+    if hue > 95 and hue < 150 then
+        hue = 155
+    end
+    vim.api.nvim_set_hl(0, name, { fg = hsl_to_hex(hue, 0.72, 0.55) })
+    return name
+end
+
+local function hg_log_line_highlight(info, topic_keys)
+    if info.topic ~= "" then
+        return topic_keys["topic:" .. info.topic]
+    end
+    if info.phase == "secret" then
+        return "HgLogUncommitted"
+    end
+    if info.phase == "draft" then
+        return "HgLogLocal"
+    end
+    if info.branch == "default" then
+        return "HgLogDefault"
+    end
+    return topic_keys["branch:" .. info.branch]
+end
+
 local function render_hg_blame(buf)
     vim.api.nvim_buf_clear_namespace(buf, blame_namespace, 0, -1)
 
@@ -1254,7 +1333,9 @@ local function toggle_hg_blame()
     load_hg_blame(buf)
 end
 
-local function show_hg_topics(buf)
+local function colorize_hg_log(buf)
+    define_hg_log_highlights()
+
     local rows_by_revision = {}
     local revisions = {}
 
@@ -1284,16 +1365,36 @@ local function show_hg_topics(buf)
         "-r",
         revset,
         "-T",
-        "{rev}\\t{topic}\\n",
+        "{rev}\\t{phase}\\t{branch}\\t{topic}\\n",
     }, { text = true }, function(result)
         if result.code ~= 0 then
             return
         end
 
-        local topics = {}
-        for revision, topic in result.stdout:gmatch("(%d+)\t([^\n]*)") do
-            if topic ~= "" then
-                topics[revision] = topic
+        local infos = {}
+        for revision, phase, branch, topic in result.stdout:gmatch("(%d+)\t([^\t]*)\t([^\t]*)\t([^\n]*)") do
+            infos[revision] = {
+                phase = phase,
+                branch = branch,
+                topic = topic,
+            }
+        end
+
+        local topic_keys = {}
+        local next_topic = 1
+        for _, revision in ipairs(revisions) do
+            local info = infos[revision]
+            if info then
+                local key
+                if info.topic ~= "" then
+                    key = "topic:" .. info.topic
+                elseif info.phase == "public" and info.branch ~= "default" then
+                    key = "branch:" .. info.branch
+                end
+                if key and not topic_keys[key] then
+                    topic_keys[key] = hg_log_topic_highlight(next_topic)
+                    next_topic = next_topic + 1
+                end
             end
         end
 
@@ -1303,13 +1404,22 @@ local function show_hg_topics(buf)
             end
 
             vim.api.nvim_buf_clear_namespace(buf, topic_namespace, 0, -1)
-            for revision, topic in pairs(topics) do
+            for revision, info in pairs(infos) do
                 local row = rows_by_revision[revision]
                 if row then
-                    vim.api.nvim_buf_set_extmark(buf, topic_namespace, row, 0, {
-                        virt_text = { { "  [topic: " .. topic .. "]", "Special" } },
-                        virt_text_pos = "eol",
-                    })
+                    local hl = hg_log_line_highlight(info, topic_keys)
+                    local line = vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1] or ""
+                    local opts = {
+                        end_row = row,
+                        end_col = #line,
+                        hl_group = hl,
+                        line_hl_group = hl,
+                    }
+                    if info.topic ~= "" then
+                        opts.virt_text = { { "  [topic: " .. info.topic .. "]", hl } }
+                        opts.virt_text_pos = "eol"
+                    end
+                    vim.api.nvim_buf_set_extmark(buf, topic_namespace, row, 0, opts)
                 end
             end
         end)
@@ -1321,6 +1431,12 @@ return {
     lazy = false,
     config = function()
         local group = vim.api.nvim_create_augroup("lawrencium_graph_log", { clear = true })
+        define_hg_log_highlights()
+
+        vim.api.nvim_create_autocmd("ColorScheme", {
+            group = group,
+            callback = define_hg_log_highlights,
+        })
 
         vim.api.nvim_create_autocmd({ "CursorMoved", "BufEnter" }, {
             group = group,
@@ -1374,7 +1490,7 @@ return {
                         return
                     end
 
-                    show_hg_topics(event.buf)
+                    colorize_hg_log(event.buf)
 
                     vim.keymap.set("n", "<CR>", function()
                         local line = vim.api.nvim_get_current_line()
