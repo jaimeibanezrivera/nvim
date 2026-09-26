@@ -194,39 +194,16 @@ if f then
 end
 vim.cmd.colorscheme(saved or "gruvbox-material")
 
--- Keep Zellij theme in sync with Neovim light/dark mode.
--- Light uses the local PaperColor-compatible theme; dark uses a built-in theme.
-local function sync_zellij_theme()
-    local zellij_config = vim.fn.expand("~/.config/zellij/config.kdl")
-    local is_dark = vim.o.background == "dark"
-    local target_theme = is_dark and "onedark" or "pencil-light-visible-selection"
+-- Zellij theme sync is handled by zj-theme (lua/plugins/zj-theme.lua).
+-- Make light/dark mode available to shell prompts.
+local function write_theme_mode()
     local mode_file = vim.fn.expand("~/.config/theme-mode")
-
-    -- Make light/dark mode available to shell prompts.
-    vim.fn.writefile({ is_dark and "dark" or "light" }, mode_file)
-
-    if vim.fn.filereadable(zellij_config) == 1 then
-        local lines = vim.fn.readfile(zellij_config)
-        local updated = false
-
-        for i, line in ipairs(lines) do
-            if line:match('^theme%s+".+"$') then
-                lines[i] = string.format('theme "%s"', target_theme)
-                updated = true
-                break
-            end
-        end
-
-        if updated then
-            vim.fn.writefile(lines, zellij_config)
-        end
-    end
+    vim.fn.writefile({ vim.o.background == "dark" and "dark" or "light" }, mode_file)
 end
 
 vim.api.nvim_create_autocmd("ColorScheme", {
-    group = vim.api.nvim_create_augroup("sync-zellij-theme", { clear = true }),
-    callback = sync_zellij_theme,
+    group = vim.api.nvim_create_augroup("write-theme-mode", { clear = true }),
+    callback = write_theme_mode,
 })
 
--- Ensure sync happens at startup for the currently loaded colorscheme.
-sync_zellij_theme()
+write_theme_mode()
