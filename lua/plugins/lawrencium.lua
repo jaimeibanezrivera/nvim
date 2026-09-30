@@ -849,6 +849,17 @@ local function open_thg_log()
 end
 
 local hg_location_cache = { root = nil, time = 0, text = "" }
+local hg_location_seq = 0
+
+local function set_hg_location(buf, root, text)
+    hg_location_cache = { root = root, time = vim.uv.now(), text = text }
+    if vim.api.nvim_buf_is_valid(buf) then
+        vim.b[buf].hg_location = text
+    end
+    pcall(function()
+        require("lualine").refresh({ place = { "statusline" } })
+    end)
+end
 
 local function refresh_hg_location(buf)
     if not vim.api.nvim_buf_is_valid(buf) then
@@ -856,7 +867,7 @@ local function refresh_hg_location(buf)
     end
 
     local file = vim.api.nvim_buf_get_name(buf)
-    local root = file ~= "" and vim.fs.root(file, ".hg") or find_hg_root()
+    local root = (file ~= "" and vim.fs.root(file, ".hg")) or vim.fs.root(vim.fn.getcwd(), ".hg")
     if not root then
         vim.b[buf].hg_location = nil
         return
@@ -868,6 +879,40 @@ local function refresh_hg_location(buf)
         return
     end
 
+    hg_location_seq = hg_location_seq + 1
+    local seq = hg_location_seq
+    local parts = { ident = nil, topic = nil }
+    local pending = 2
+
+    local function finish()
+        pending = pending - 1
+        if pending > 0 then
+            return
+        end
+
+        vim.schedule(function()
+            if seq ~= hg_location_seq or not vim.api.nvim_buf_is_valid(buf) then
+                return
+            end
+
+            local ident = parts.ident
+            if not ident then
+                return
+            end
+
+            local topic = parts.topic or ""
+            local text = ident.branch
+            if topic ~= "" then
+                text = text .. "/" .. topic
+            end
+            if ident.rev ~= "" then
+                text = text .. " " .. ident.rev
+            end
+
+            set_hg_location(buf, root, text)
+        end)
+    end
+
     vim.system({
         "hg",
         "--cwd",
@@ -876,21 +921,35 @@ local function refresh_hg_location(buf)
         "-r",
         ".",
         "-T",
-        "{branch}{ifeq(topic, '', '', '/' ++ topic)} {rev}",
+        "{branch}\\t{rev}",
     }, { text = true }, function(result)
-        vim.schedule(function()
-            if not vim.api.nvim_buf_is_valid(buf) then
-                return
+        if result.code == 0 then
+            local line = vim.trim(result.stdout or "")
+            local branch, rev = line:match("^(.-)\t(.*)$")
+            if branch then
+                parts.ident = { branch = branch, rev = rev }
+            elseif line ~= "" then
+                parts.ident = { branch = line, rev = "" }
             end
+        end
+        finish()
+    end)
 
-            if result.code ~= 0 then
-                return
-            end
-
-            local text = vim.trim(result.stdout or "")
-            hg_location_cache = { root = root, time = vim.uv.now(), text = text }
-            vim.b[buf].hg_location = text
-        end)
+    vim.system({
+        "hg",
+        "--cwd",
+        root,
+        "topics",
+        "--current",
+        "-T",
+        "{topic}",
+    }, { text = true }, function(result)
+        if result.code == 0 then
+            parts.topic = vim.trim(result.stdout or "")
+        else
+            parts.topic = ""
+        end
+        finish()
     end)
 end
 
