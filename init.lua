@@ -125,6 +125,8 @@ vim.keymap.set("n", "<C-j>", function()
     vim.cmd("startinsert")
 end, { desc = "Toggle split terminal" })
 
+
+
 local function close_terminal()
     if term_win and vim.api.nvim_win_is_valid(term_win) then
         vim.api.nvim_win_close(term_win, true)

@@ -12,6 +12,9 @@ return {
           layout = "diff3_mixed",
         },
       },
+      default_args = {
+        DiffviewOpen = { "--untracked-files=no" },
+      },
     })
 
     -- Keymaps
