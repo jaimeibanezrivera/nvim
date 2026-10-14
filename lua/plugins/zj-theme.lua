@@ -14,6 +14,7 @@ return {
 
         require("zj-theme").setup({
             default_light_theme = "pencil-light-visible-selection",
+            pane_command_patterns = { "cursor%-agent" },
             mappings = {
                 juliana = "juliana",
                 dawnfox = "dawnfox",
