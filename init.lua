@@ -163,6 +163,15 @@ vim.api.nvim_create_autocmd("TermOpen", {
     end,
 })
 
+-- Markdown: no wrap, otherwise markview skips rendering wide tables
+vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("markdown-nowrap", { clear = true }),
+    pattern = "markdown",
+    callback = function()
+        vim.opt_local.wrap = false
+    end,
+})
+
 -- Force solid background regardless of colorscheme or terminal transparency
 vim.api.nvim_create_autocmd("ColorScheme", {
     pattern = "*",
