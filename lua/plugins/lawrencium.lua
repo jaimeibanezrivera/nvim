@@ -1327,6 +1327,10 @@ return {
                         return
                     end
 
+                    if vim.b[event.buf].hg_graph then
+                        return
+                    end
+
                     colorize_hg_log(event.buf)
 
                     vim.keymap.set("n", "<CR>", function()

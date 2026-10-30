@@ -7,17 +7,6 @@ return {
     diffview.setup({
       -- Example options
       enhanced_diff_hl = true,
-      view = {
-        default = {
-          layout = "diff2_vertical",
-        },
-        merge_tool = {
-          layout = "diff3_mixed",
-        },
-        file_history = {
-          layout = "diff2_vertical",
-        },
-      },
       default_args = {
         DiffviewOpen = { "--untracked-files=no" },
       },
