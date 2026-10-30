@@ -101,6 +101,24 @@ return {
 			})
 		end,
 	},
+	{
+		-- Port of Sublime's Mariana. Archived upstream (2024-01-25), but stable.
+		"kaiuri/nvim-juliana",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			require("nvim-juliana").setup({})
+			-- juliana doesn't set 'background' itself; keep it dark after switching
+			-- from a light theme so theme-mode and zj-theme resolve correctly.
+			vim.api.nvim_create_autocmd("ColorSchemePre", {
+				pattern = "juliana",
+				callback = function()
+					vim.o.background = "dark"
+				end,
+			})
+		end,
+	},
+	{ "xero/miasma.nvim", lazy = false, priority = 1000 },
 	-- Using Lazy
 	{
 		"navarasu/onedark.nvim",

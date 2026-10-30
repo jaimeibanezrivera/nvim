@@ -33,7 +33,14 @@ return {
         require("zj-theme").setup({
             default_dark_theme = "onedark",
             default_light_theme = "pencil-light-visible-selection",
-            terminal = { emulator = "alacritty" },
+            -- juliana (Mariana) and miasma zellij themes live in
+            -- ~/.config/zellij/themes/; juliana's alacritty theme is a custom
+            -- ~/.config/alacritty/themes/juliana.toml, miasma's ships upstream.
+            mappings = { juliana = "juliana", miasma = "miasma" },
+            terminal = {
+                emulator = "alacritty",
+                mappings = { juliana = "juliana", miasma = "miasma" },
+            },
         })
 
         vim.api.nvim_create_autocmd("ColorScheme", {
