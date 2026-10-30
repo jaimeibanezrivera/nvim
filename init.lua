@@ -13,6 +13,7 @@ vim.opt.autoindent = true
 -- UI
 vim.opt.number = true
 vim.opt.cursorline = true
+vim.opt.updatetime = 250 -- Faster CursorHold (LSP reference highlighting)
 
 -- System
 vim.g.clipboard = {

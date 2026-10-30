@@ -45,6 +45,8 @@ return {
 		vim.keymap.set("n", "<leader>bw", fzf.grep_cword, { desc = "Browse Word under cursor" })
 		vim.keymap.set("n", "<leader>br", fzf.oldfiles, { desc = "Browse Recent files" })
 		vim.keymap.set("n", "<leader>bb", fzf.buffers, { desc = "Browse Buffers" })
+		vim.keymap.set("n", "<leader>p", fzf.commands, { desc = "Command palette" })
+		vim.keymap.set("n", "<leader>bk", fzf.keymaps, { desc = "Browse Keymaps" })
 		vim.keymap.set("n", "<leader>bc", function()
 			fzf.colorschemes({
 				actions = {
