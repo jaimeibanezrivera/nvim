@@ -107,7 +107,9 @@ return {
 		lazy = false,
 		priority = 1000,
 		config = function()
-			require("nvim-juliana").setup({})
+			-- Match alacritty-theme's Mariana.toml background, so the terminal theme
+			-- needs no custom file and works on every machine.
+			require("nvim-juliana").setup({ colors = { bg2 = "#343d46" } })
 			-- juliana doesn't set 'background' itself; keep it dark after switching
 			-- from a light theme so theme-mode and zj-theme resolve correctly.
 			vim.api.nvim_create_autocmd("ColorSchemePre", {

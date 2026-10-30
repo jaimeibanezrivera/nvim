@@ -34,12 +34,12 @@ return {
             default_dark_theme = "onedark",
             default_light_theme = "pencil-light-visible-selection",
             -- juliana (Mariana) and miasma zellij themes live in
-            -- ~/.config/zellij/themes/; juliana's alacritty theme is a custom
-            -- ~/.config/alacritty/themes/juliana.toml, miasma's ships upstream.
+            -- ~/.config/zellij/themes/; both alacritty themes ship with
+            -- alacritty-theme (juliana's bg is overridden to match Mariana.toml).
             mappings = { juliana = "juliana", miasma = "miasma" },
             terminal = {
                 emulator = "alacritty",
-                mappings = { juliana = "juliana", miasma = "miasma" },
+                mappings = { juliana = "Mariana", miasma = "miasma" },
             },
         })
 
