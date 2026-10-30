@@ -33,6 +33,7 @@ return {
         require("zj-theme").setup({
             default_dark_theme = "onedark",
             default_light_theme = "pencil-light-visible-selection",
+            terminal = { emulator = "alacritty" },
         })
 
         vim.api.nvim_create_autocmd("ColorScheme", {
