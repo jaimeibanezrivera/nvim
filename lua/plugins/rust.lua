@@ -11,8 +11,10 @@ return {
 								vim.cmd.RustLsp(cmd)
 							end, { buffer = bufnr, silent = true, desc = desc })
 						end
-						map("<leader>rr", "runnables", "Rust: run")
-						map("<leader>rt", "testables", "Rust: run test")
+						map("<leader>rr", "run", "Rust: run test/main under cursor")
+						map("<leader>rl", { "runnables", bang = true }, "Rust: rerun last")
+						map("<leader>ra", "runnables", "Rust: pick runnable")
+						map("<leader>rt", "testables", "Rust: pick test")
 						map("<leader>re", "explainError", "Rust: explain error")
 						map("<leader>rd", "renderDiagnostic", "Rust: full diagnostic")
 						map("<leader>rm", "expandMacro", "Rust: expand macro")
