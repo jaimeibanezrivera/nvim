@@ -30,18 +30,25 @@ return {
     "jaimeibanezrivera/zj-theme",
     lazy = false,
     config = function()
-        require("zj-theme").setup({
+        local opts = {
             default_dark_theme = "onedark",
             default_light_theme = "pencil-light-visible-selection",
             -- juliana (Mariana) and miasma zellij themes live in
             -- ~/.config/zellij/themes/; both alacritty themes ship with
             -- alacritty-theme (juliana's bg is overridden to match Mariana.toml).
             mappings = { juliana = "juliana", miasma = "miasma" },
-            terminal = {
+        }
+
+        -- Only write alacritty's zj-theme.toml on machines that have alacritty
+        -- (the laptop). Elsewhere the write would fail on every colorscheme change.
+        if vim.fn.isdirectory(vim.fn.expand("~/.config/alacritty")) == 1 then
+            opts.terminal = {
                 emulator = "alacritty",
                 mappings = { juliana = "Mariana", miasma = "miasma" },
-            },
-        })
+            }
+        end
+
+        require("zj-theme").setup(opts)
 
         vim.api.nvim_create_autocmd("ColorScheme", {
             group = vim.api.nvim_create_augroup("zj-theme-alacritty-tunnel", { clear = true }),
