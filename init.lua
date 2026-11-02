@@ -13,6 +13,7 @@ vim.opt.autoindent = true
 -- UI
 vim.opt.number = true
 vim.opt.cursorline = true
+vim.opt.updatetime = 250 -- Faster CursorHold (LSP reference highlighting)
 
 -- System
 local is_ssh = vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
@@ -199,6 +200,17 @@ vim.api.nvim_create_autocmd("TermOpen", {
     end,
 })
 
+-- Force solid background regardless of colorscheme or terminal transparency
+vim.api.nvim_create_autocmd("ColorScheme", {
+    pattern = "*",
+    callback = function()
+        local hl = vim.api.nvim_get_hl(0, { name = "Normal", link = false })
+        if not hl.bg then
+            vim.api.nvim_set_hl(0, "Normal", { bg = "#1d2021" })
+        end
+    end,
+})
+
 -- Highlight yanked text briefly
 vim.api.nvim_create_autocmd("TextYankPost", {
     group = vim.api.nvim_create_augroup("highlight-yank", { clear = true }),
@@ -228,3 +240,17 @@ end
 local cwd = vim.fn.getcwd()
 
 vim.cmd.colorscheme(saved or "gruvbox-material")
+
+-- Zellij theme sync is handled by zj-theme (lua/plugins/zj-theme.lua).
+-- Make light/dark mode available to shell prompts.
+local function write_theme_mode()
+    local mode_file = vim.fn.expand("~/.config/theme-mode")
+    vim.fn.writefile({ vim.o.background == "dark" and "dark" or "light" }, mode_file)
+end
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+    group = vim.api.nvim_create_augroup("write-theme-mode", { clear = true }),
+    callback = write_theme_mode,
+})
+
+write_theme_mode()

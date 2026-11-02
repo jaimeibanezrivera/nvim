@@ -5,26 +5,16 @@ return {
     lazy = false,
     build = ":TSUpdate",
     config = function()
-      local treesitter = require("nvim-treesitter")
-      local languages = {
-        "python",
-        "lua",
-        "vim",
-        "vimdoc",
-        "query",
-        "c",
-        "cpp",
-        "rust",
-        "markdown",
-        "markdown_inline",
-      }
-
-      treesitter.install(languages)
+      -- The main branch ignores ensure_installed/highlight options:
+      -- parsers are installed explicitly and highlighting is started per buffer.
+      require("nvim-treesitter").install({
+        "python", "lua", "vim", "vimdoc", "query", "c", "cpp", "rust", "toml", "markdown", "markdown_inline",
+      })
 
       vim.api.nvim_create_autocmd("FileType", {
-        pattern = languages,
-        callback = function()
-          vim.treesitter.start()
+        group = vim.api.nvim_create_augroup("treesitter-start", { clear = true }),
+        callback = function(ev)
+          pcall(vim.treesitter.start, ev.buf)
         end,
       })
     end,
