@@ -2,6 +2,9 @@
 -- machine, which rewrites the local alacritty's zj-theme.toml.
 local ALACRITTY_TUNNEL_PORT = 7778
 
+-- Alacritty theme used when a colorscheme has no mapping below.
+local ALACRITTY_BASE_THEME = "Mariana"
+
 -- Colorscheme name -> alacritty theme name (as the laptop's listener expects).
 local ALACRITTY_THEMES = {
     juliana = "Mariana",
@@ -15,13 +18,11 @@ local ALACRITTY_THEMES = {
     ["kanagawa-lotus"] = "kanagawa_lotus",
 }
 
--- Send the alacritty theme name for the active colorscheme through the
--- tunnel. Silently does nothing if the tunnel isn't up.
+-- Send the alacritty theme for the active colorscheme through the tunnel.
+-- Unmapped colorschemes fall back to the base theme. Silently does nothing
+-- if the tunnel isn't up.
 local function send_alacritty_theme()
-    local theme = ALACRITTY_THEMES[vim.g.colors_name]
-    if not theme then
-        return
-    end
+    local theme = ALACRITTY_THEMES[vim.g.colors_name] or ALACRITTY_BASE_THEME
 
     local tcp = vim.uv.new_tcp()
     tcp:connect("127.0.0.1", ALACRITTY_TUNNEL_PORT, function(err)
