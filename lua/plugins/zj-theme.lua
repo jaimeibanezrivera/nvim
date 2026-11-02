@@ -1,13 +1,24 @@
 -- Port reverse-forwarded (ssh RemoteForward) to a listener on the local
 -- machine, which rewrites the local alacritty's zj-theme.toml.
-local ALACRITTY_TUNNEL_PORT = 47631
+local ALACRITTY_TUNNEL_PORT = 7778
+
+-- Colorscheme name -> alacritty theme name (as the laptop's listener expects).
+local ALACRITTY_THEMES = {
+    juliana = "Mariana",
+    miasma = "miasma",
+    nordfox = "nordfox",
+    duskfox = "duskfox",
+    terafox = "terafox",
+    kanagawa = "kanagawa_wave",
+    ["kanagawa-wave"] = "kanagawa_wave",
+    ["kanagawa-dragon"] = "kanagawa_dragon",
+    ["kanagawa-lotus"] = "kanagawa_lotus",
+}
 
 -- Send the alacritty theme name for the active colorscheme through the
 -- tunnel. Silently does nothing if the tunnel isn't up.
 local function send_alacritty_theme()
-    local terminal = require("zj-theme.terminal")
-    local adapter = require("zj-theme.terminals.alacritty")
-    local theme = terminal.resolve_theme(adapter, vim.g.colors_name) or terminal.default_theme(adapter)
+    local theme = ALACRITTY_THEMES[vim.g.colors_name]
     if not theme then
         return
     end
