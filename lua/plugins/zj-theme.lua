@@ -9,6 +9,7 @@ local ALACRITTY_BASE_THEME = "Mariana"
 local ALACRITTY_THEMES = {
     juliana = "Mariana",
     miasma = "miasma",
+    carbonfox = "carbonfox",
     nordfox = "nordfox",
     duskfox = "duskfox",
     terafox = "terafox",
