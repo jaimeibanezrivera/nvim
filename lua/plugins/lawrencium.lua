@@ -1327,10 +1327,6 @@ return {
                         return
                     end
 
-                    if vim.b[event.buf].hg_graph then
-                        return
-                    end
-
                     colorize_hg_log(event.buf)
 
                     vim.keymap.set("n", "<CR>", function()
@@ -1363,7 +1359,23 @@ return {
     keys = {
         { "<leader>hs", "<cmd>Hgstatus<CR>", desc = "Mercurial status" },
         { "<leader>hu", toggle_hg_uncommitted, desc = "Toggle Mercurial uncommitted files" },
-        { "<leader>hd", "<cmd>DiffviewOpen<CR>", desc = "Open Mercurial working changes in Diffview" },
+        {
+            "<leader>hd",
+            function()
+                local root = vim.fs.root(vim.fn.getcwd(), ".hg")
+                if not root then
+                    vim.notify("Not in a Mercurial repository", vim.log.levels.WARN)
+                    return
+                end
+                local result = vim.system({ "hg", "--cwd", root, "status", "-mard" }, { text = true }):wait()
+                if result.code == 0 and vim.trim(result.stdout or "") == "" then
+                    vim.notify("No current changes", vim.log.levels.INFO)
+                    return
+                end
+                vim.cmd("DiffviewOpen")
+            end,
+            desc = "Open Mercurial working changes in Diffview",
+        },
         { "<leader>hb", toggle_hg_blame, desc = "Toggle Mercurial current line blame" },
         {
             "<leader>hg",
