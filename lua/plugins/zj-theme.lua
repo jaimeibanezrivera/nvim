@@ -31,7 +31,7 @@ local function send_alacritty_theme()
             tcp:close()
             return
         end
-        tcp:write(theme .. "\n", function()
+        tcp:write("theme " .. theme .. "\n", function()
             tcp:shutdown(function()
                 tcp:close()
             end)
