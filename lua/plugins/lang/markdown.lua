@@ -1,7 +1,7 @@
 -- For `plugins/markview.lua` users.
 return {
     "OXY2DEV/markview.nvim",
-    lazy = false,
+    ft = "markdown",
 
     -- A function so markview's presets can be required after it's loaded.
     opts = function()

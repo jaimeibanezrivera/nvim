@@ -214,7 +214,8 @@ end
 -- Make light/dark mode available to shell prompts.
 local function write_theme_mode()
     local mode_file = vim.fn.expand("~/.config/theme-mode")
-    vim.fn.writefile({ vim.o.background == "dark" and "dark" or "light" }, mode_file)
+    -- Ignore failures (e.g. ~/.config missing on a fresh machine) so startup stays clean.
+    pcall(vim.fn.writefile, { vim.o.background == "dark" and "dark" or "light" }, mode_file)
 end
 
 vim.api.nvim_create_autocmd("ColorScheme", {
