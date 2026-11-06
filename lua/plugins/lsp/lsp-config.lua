@@ -17,6 +17,10 @@ return {
 				float = { border = "rounded", source = true },
 			})
 
+			vim.keymap.set("n", "<leader>te", function()
+				vim.diagnostic.config({ virtual_text = not vim.diagnostic.config().virtual_text })
+			end, { desc = "Toggle LSP error messages" })
+
 			-- Drop the built-in gr* mappings so `gr` (references) fires immediately
 			for _, lhs in ipairs({ "grn", "gra", "grr", "gri", "grt" }) do
 				pcall(vim.keymap.del, "n", lhs)
