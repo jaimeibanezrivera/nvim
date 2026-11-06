@@ -51,7 +51,6 @@ return {
 			})
 		end,
 	},
-	{ "EdenEast/nightfox.nvim" }, -- lazy
 	{
 		"NLKNguyen/papercolor-theme",
 		lazy = false,
@@ -88,16 +87,6 @@ return {
 						vim.api.nvim_set_hl(0, group, { link = "Function" })
 					end
 				end,
-			})
-		end,
-	},
-	{
-		"Shatur/neovim-ayu",
-		lazy = false,
-		priority = 1000,
-		config = function()
-			require("ayu").setup({
-				mirage = false, -- set to true for mirage variant
 			})
 		end,
 	},

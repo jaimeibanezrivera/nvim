@@ -17,17 +17,16 @@ local ALACRITTY_THEMES = {
     terafox = "terafox",
     dawnfox = "dawnfox",
     onedark = { dark = "one_dark", light = "one_light" },
-    -- kanagawa and ayu set colors_name to "kanagawa"/"ayu" for every variant,
+    -- kanagawa sets colors_name to "kanagawa" for every variant,
     -- so variants are matched on the name passed to :colorscheme instead.
     kanagawa = { dark = "kanagawa_wave", light = "gruvbox_light" },
     ["kanagawa-wave"] = "kanagawa_wave",
     ["kanagawa-dragon"] = "kanagawa_dragon",
     -- No kanagawa_lotus in alacritty-theme; closest warm light theme.
     ["kanagawa-lotus"] = "gruvbox_light",
-    ["ayu-mirage"] = "ayu_mirage",
 }
 
--- Name passed to the last :colorscheme (e.g. "ayu-mirage"), set on ColorSchemePre.
+-- Name passed to the last :colorscheme (e.g. "kanagawa-wave"), set on ColorSchemePre.
 local requested_colorscheme
 
 local function lookup(name)

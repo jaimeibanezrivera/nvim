@@ -148,13 +148,6 @@ end
 
 vim.keymap.set("t", "<C-j>", close_terminal, { noremap = true, silent = true, desc = "Close terminal buffer" })
 
--- Theme: Toggle between light and dark mode
-vim.keymap.set("n", "<leader>lm", function()
-    vim.o.background = vim.o.background == "dark" and "light" or "dark"
-    vim.cmd.colorscheme("gruvbox-material")
-    print("Switched to gruvbox " .. vim.o.background .. " mode")
-end, { desc = "Toggle Light/Dark Mode" })
-
 -- ============================================================================
 -- AUTOCOMMANDS
 -- ============================================================================
@@ -212,7 +205,10 @@ local saved = f and f:read("*l")
 if f then
     f:close()
 end
-vim.cmd.colorscheme(saved or "gruvbox-material")
+-- Fall back if the saved name is stale or misspelled, instead of failing startup.
+if not pcall(vim.cmd.colorscheme, saved or "gruvbox-material") then
+    vim.cmd.colorscheme("gruvbox-material")
+end
 
 -- Zellij theme sync is handled by zj-theme (lua/plugins/ui/zj-theme.lua).
 -- Make light/dark mode available to shell prompts.

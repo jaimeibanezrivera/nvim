@@ -10,7 +10,7 @@ lua/plugins/
   ui/                 -- colorschemes, statusline, dashboard, which-key, zj-theme
   editor/             -- fzf, neo-tree, oil, treesitter, completions, autopairs, trouble
   lsp/                -- lsp-config, mason, none-ls
-  lang/               -- rust, markdown, plantuml
+  lang/               -- rust, markdown
   vcs/                -- gitsigns (git), hgsigns and lawrencium (Mercurial), diffview, lazygit
 lazy-lock.json        -- pinned plugin versions
 ```
@@ -32,8 +32,7 @@ set -gx NVIM_REMOTE 1
 
 ## Colorscheme
 
-`init.lua` applies the saved colorscheme at startup. The fzf colorscheme picker writes the choice to `.colorscheme`, which is gitignored. `<leader>lm` toggles light and dark gruvbox-material.
-
+`init.lua` applies the saved colorscheme at startup. The fzf colorscheme picker writes the choice to `.colorscheme`, which is gitignored.
 `lua/plugins/ui/zj-theme.lua` sends the matching alacritty theme through a tunnel on port 7778. The tunnel only exists when the laptop forwards it, so nothing happens without it.
 
 ## Adding a plugin
