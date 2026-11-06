@@ -12,6 +12,8 @@ local ALACRITTY_BASE_THEME = "Mariana"
 local ALACRITTY_THEMES = {
     juliana = "Mariana",
     miasma = "miasma",
+    github_dark = "github_dark",
+    github_dark_dimmed = "github_dark_dimmed",
     nordfox = "nordfox",
     duskfox = "duskfox",
     terafox = "terafox",
@@ -84,9 +86,15 @@ return {
             default_dark_theme = "onedark",
             default_light_theme = "pencil-light-visible-selection",
             -- juliana (Mariana) and miasma zellij themes live in
-            -- ~/.config/zellij/themes/; both alacritty themes ship with
-            -- alacritty-theme (juliana's bg is overridden to match Mariana.toml).
-            mappings = { juliana = "juliana", miasma = "miasma" },
+            -- ~/.config/zellij/themes/, as do the github_dark(+_dimmed) ones.
+            -- Other alacritty themes ship with alacritty-theme
+            -- (juliana's bg is overridden to match Mariana.toml).
+            mappings = {
+                juliana = "juliana",
+                miasma = "miasma",
+                github_dark = "github_dark",
+                github_dark_dimmed = "github_dark_dimmed",
+            },
         }
 
         -- Only write alacritty's zj-theme.toml on machines that have alacritty
@@ -94,7 +102,7 @@ return {
         if vim.fn.isdirectory(vim.fn.expand("~/.config/alacritty")) == 1 then
             opts.terminal = {
                 emulator = "alacritty",
-                mappings = { juliana = "Mariana", miasma = "miasma" },
+                mappings = { juliana = "Mariana", miasma = "miasma", github_dark = "github_dark", github_dark_dimmed = "github_dark_dimmed" },
             }
         end
 

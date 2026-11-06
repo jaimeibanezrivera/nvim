@@ -206,8 +206,8 @@ if f then
     f:close()
 end
 -- Fall back if the saved name is stale or misspelled, instead of failing startup.
-if not pcall(vim.cmd.colorscheme, saved or "gruvbox-material") then
-    vim.cmd.colorscheme("gruvbox-material")
+if not pcall(vim.cmd.colorscheme, saved or "github_dark") then
+    vim.cmd.colorscheme("github_dark")
 end
 
 -- Zellij theme sync is handled by zj-theme (lua/plugins/ui/zj-theme.lua).
