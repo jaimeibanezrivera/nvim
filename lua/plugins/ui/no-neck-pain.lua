@@ -1,4 +1,4 @@
--- lua/plugins/no-neck-pain.lua
+-- lua/plugins/ui/no-neck-pain.lua
 
 return {
   "shortcuts/no-neck-pain.nvim",

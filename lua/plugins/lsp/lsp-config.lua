@@ -135,7 +135,7 @@ return {
 				},
 			}
 			vim.lsp.enable("basedpyright")
-			-- rust-analyzer is started by rustaceanvim (lua/plugins/rust.lua)
+			-- rust-analyzer is started by rustaceanvim (lua/plugins/lang/rust.lua)
 			-- Enable clangd LSP
 			vim.lsp.enable("clangd")
 		end,

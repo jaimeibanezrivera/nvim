@@ -18,7 +18,7 @@ return {
 			vim.g.gruvbox_material_enable_bold = 1
 			vim.g.gruvbox_material_enable_italic = 1
 			vim.g.gruvbox_material_transparent_background = 0
-			vim.cmd.colorscheme("gruvbox-material") -- Apply the initial dark theme
+			-- The startup colorscheme is applied in init.lua (THEME section).
 		end,
 	},
 	{

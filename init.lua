@@ -16,17 +16,21 @@ vim.opt.cursorline = true
 vim.opt.updatetime = 250 -- Faster CursorHold (LSP reference highlighting)
 
 -- System
-vim.g.clipboard = {
-	name = "OSC 52",
-	copy = {
-		["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-		["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-	},
-	paste = {
-		["+"] = require("vim.ui.clipboard.osc52").paste("+"),
-		["*"] = require("vim.ui.clipboard.osc52").paste("*"),
-	},
-}
+-- Remote (SSH) sessions: copy via OSC 52 so the text reaches the local terminal.
+-- Local sessions: leave clipboard unset so nvim uses the OS provider (xclip, wl-copy, ...).
+if vim.env.NVIM_REMOTE == "1" then
+	vim.g.clipboard = {
+		name = "OSC 52",
+		copy = {
+			["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+			["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+		},
+		paste = {
+			["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+			["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+		},
+	}
+end
 vim.opt.clipboard:append("unnamedplus")
 -- ============================================================================
 -- PLUGIN MANAGER (LAZY.NVIM)
@@ -54,7 +58,13 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-require("lazy").setup("plugins")
+require("lazy").setup({
+    { import = "plugins.ui" },
+    { import = "plugins.editor" },
+    { import = "plugins.lsp" },
+    { import = "plugins.lang" },
+    { import = "plugins.vcs" },
+})
 
 -- ============================================================================
 -- KEYMAPS
@@ -204,7 +214,7 @@ if f then
 end
 vim.cmd.colorscheme(saved or "gruvbox-material")
 
--- Zellij theme sync is handled by zj-theme (lua/plugins/zj-theme.lua).
+-- Zellij theme sync is handled by zj-theme (lua/plugins/ui/zj-theme.lua).
 -- Make light/dark mode available to shell prompts.
 local function write_theme_mode()
     local mode_file = vim.fn.expand("~/.config/theme-mode")
