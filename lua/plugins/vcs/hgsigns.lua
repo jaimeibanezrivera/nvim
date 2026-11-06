@@ -1,6 +1,7 @@
 return {
     'cavanaug/hgsigns.nvim',
     branch = 'mercurial',
+    cond = vim.fn.executable('hg') == 1,
     config = function()
         require('hgsigns').setup({
             signs = {
