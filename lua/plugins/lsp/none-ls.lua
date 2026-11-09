@@ -2,11 +2,28 @@ return {
   "nvimtools/none-ls.nvim",
   config = function()
     local null_ls = require("null-ls")
+
+    -- Work repos (this server only) use the project's astyle settings instead of clang-format
+    local work_root = "/repo/asic_fpga/work/jaimrive/"
+    local astyle_rc = work_root .. "sdk_debugger/vobs/dsl/sw/y/src/common_sdk/tools/astyle/astylerc"
+
+    local function in_work_repo(params)
+      return vim.startswith(params.bufname, work_root)
+    end
+
     null_ls.setup({
       sources = {
         null_ls.builtins.formatting.stylua,
         null_ls.builtins.formatting.black,
-        null_ls.builtins.formatting.clang_format,
+        null_ls.builtins.formatting.astyle.with({
+          extra_args = { "--options=" .. astyle_rc },
+          runtime_condition = in_work_repo,
+        }),
+        null_ls.builtins.formatting.clang_format.with({
+          runtime_condition = function(params)
+            return not in_work_repo(params)
+          end,
+        }),
       },
     })
 
