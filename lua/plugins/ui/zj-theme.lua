@@ -94,6 +94,10 @@ return {
                 miasma = "miasma",
                 github_dark = "github_dark",
                 github_dark_dimmed = "github_dark_dimmed",
+                nordfox = "nordfox",
+                duskfox = "duskfox",
+                terafox = "terafox",
+                dawnfox = "dawnfox",
             },
         }
 
