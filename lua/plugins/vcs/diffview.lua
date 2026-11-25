@@ -13,34 +13,11 @@ return {
     diffview.setup({
       -- Example options
       enhanced_diff_hl = true,
+      view = {
+        merge_tool = {
+          layout = "diff3_mixed",
+        },
+      },
     })
-
-    -- Keep the diff background tints from the colorscheme, but drop the
-    -- red/green foreground so the text keeps its normal color.
-    local diff_groups = {
-      "DiffAdd",
-      "DiffDelete",
-      "DiffChange",
-      "DiffText",
-      "DiffviewDiffAdd",
-      "DiffviewDiffDelete",
-      "DiffviewDiffChange",
-      "DiffviewDiffText",
-      "DiffviewDiffAddAsDelete",
-    }
-
-    local function neutral_diff_text()
-      for _, name in ipairs(diff_groups) do
-        local hl = vim.api.nvim_get_hl(0, { name = name, link = false })
-        if hl.bg then
-          vim.api.nvim_set_hl(0, name, { bg = hl.bg })
-        end
-      end
-    end
-
-    vim.api.nvim_create_autocmd("ColorScheme", {
-      callback = neutral_diff_text,
-    })
-    neutral_diff_text()
-  end,
+  end
 }
