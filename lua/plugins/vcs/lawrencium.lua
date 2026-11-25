@@ -1085,9 +1085,20 @@ local function render_hg_blame(buf)
     local row = vim.api.nvim_win_get_cursor(0)[1] - 1
     local annotation = state.annotations[row + 1]
     if annotation then
+        -- Show "author, age • message" when it fits next to the code, otherwise just the author.
+        local win = vim.api.nvim_get_current_win()
+        local textoff = vim.fn.getwininfo(win)[1].textoff
+        local code_width = vim.fn.strdisplaywidth(vim.api.nvim_get_current_line())
+        local room = vim.api.nvim_win_get_width(win) - textoff - code_width
+
+        local text = "  " .. annotation.full
+        if vim.fn.strdisplaywidth(text) > room then
+            text = "  " .. annotation.author
+        end
+
         vim.api.nvim_buf_set_extmark(buf, blame_namespace, row, 0, {
-            virt_text = { { "  " .. annotation, "Comment" } },
-            virt_text_pos = "eol",
+            virt_text = { { text, "Comment" } },
+            virt_text_pos = "right_align",
         })
     end
 end
@@ -1141,10 +1152,10 @@ local function load_hg_blame(buf)
                     line:match("^([^\t]*)\t([^\t]*)\t([^\t]*)\t(.*)$")
 
                 if revision then
-                    table.insert(
-                        annotations,
-                        string.format("%s, %s • %s", author, age, summary)
-                    )
+                    table.insert(annotations, {
+                        author = author,
+                        full = string.format("%s, %s • %s", author, age, summary),
+                    })
                 end
             end
 
