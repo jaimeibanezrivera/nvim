@@ -11,7 +11,7 @@ lua/plugins/
   editor/             -- fzf, neo-tree, oil, treesitter, completions, autopairs, trouble
   lsp/                -- lsp-config, mason, none-ls
   lang/               -- rust, markdown
-  vcs/                -- gitsigns (git), hgsigns and lawrencium (Mercurial), diffview, lazygit
+  vcs/                -- gitsigns (git), hgsigns and lawrencium (Mercurial), diffview, resolve (merge conflicts), lazygit
 lazy-lock.json        -- pinned plugin versions
 ```
 
