@@ -98,6 +98,7 @@ return {
                 duskfox = "duskfox",
                 terafox = "terafox",
                 dawnfox = "dawnfox",
+                ["kanagawa-dragon"] = "kanagawa-dragon",
             },
         }
 
