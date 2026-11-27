@@ -31,7 +31,7 @@ if vim.env.NVIM_REMOTE == "1" then
 		},
 	}
 end
-vim.opt.clipboard:append("unnamedplus")
+-- vim.opt.clipboard:append("unnamedplus")
 -- ============================================================================
 -- PLUGIN MANAGER (LAZY.NVIM)
 -- ============================================================================
