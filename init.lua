@@ -31,7 +31,16 @@ if vim.env.NVIM_REMOTE == "1" then
 		},
 	}
 end
--- vim.opt.clipboard:append("unnamedplus")
+-- Yanks go to the system clipboard too; p/P stay on nvim's own registers.
+vim.api.nvim_create_autocmd("TextYankPost", {
+	desc = "Copy yanked text to the system clipboard",
+	callback = function()
+		local event = vim.v.event
+		if event.operator == "y" and event.regname == "" then
+			vim.fn.setreg("+", event.regcontents, event.regtype)
+		end
+	end,
+})
 -- ============================================================================
 -- PLUGIN MANAGER (LAZY.NVIM)
 -- ============================================================================
